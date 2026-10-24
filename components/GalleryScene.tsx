@@ -32,6 +32,7 @@ const placements: Placement[] = [
   { position: [-6.06, 2.38, -13.9], rotation: [0, Math.PI / 2, 0], focus: [-3.55, 2.3, -13.75], side: "left", frame: "white" },
   { position: [6.06, 2.38, -17.8], rotation: [0, -Math.PI / 2, 0], focus: [3.55, 2.3, -17.65], side: "right", frame: "oak" },
   { position: [-6.06, 2.38, -21.7], rotation: [0, Math.PI / 2, 0], focus: [-3.55, 2.3, -21.55], side: "left", frame: "shadow" },
+  { position: [0, 2.75, -27.02], rotation: [0, 0, 0], focus: [0, 2.35, -23.45], side: "front", frame: "oak" },
 ];
 
 function useScrollProgress() {

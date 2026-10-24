@@ -1,11 +1,11 @@
-# Artwork image slots
+# Artwork images
 
-Artwork imagery is intentionally not bundled until display rights are confirmed.
+The nine prototype images in this directory come from Ekaterina Sokolova's official catalogue:
+<https://sokolova-art.com/gallery>.
 
-To replace a slot:
+They were selected and downloaded on 24 October 2026, then converted to sRGB WebP at a maximum
+1600 px on the longest edge (quality 82). The application keeps the catalogue dimensions in
+`data/artworks.json`; the catalogue lists dimensions as height × width.
 
-1. Add an optimized `.webp` image here.
-2. Set the matching `image` field in `data/artworks.json`, for example `/artworks/krasnaya-moskva.webp`.
-3. Keep the original aspect ratio. The gallery uses `widthCm` and `heightCm` for frame proportions.
-
-Recommended source size: 1800–2400 px on the longest edge, sRGB, WebP quality 82–88.
+Do not substitute unrelated stock or AI-generated art for these files. Before commercial or final
+publication, the project owner should confirm reproduction and display rights with the artist.
