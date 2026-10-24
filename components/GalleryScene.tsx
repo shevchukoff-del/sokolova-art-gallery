@@ -18,18 +18,20 @@ type GallerySceneProps = {
 type Placement = {
   position: [number, number, number];
   rotation: [number, number, number];
-  side: "left" | "right";
+  focus: [number, number, number];
+  side: "left" | "right" | "front";
+  frame: "oak" | "white" | "shadow";
 };
 
 const placements: Placement[] = [
-  { position: [-5.22, 2.25, 8.3], rotation: [0, Math.PI / 2, 0], side: "left" },
-  { position: [5.22, 2.2, 4.5], rotation: [0, -Math.PI / 2, 0], side: "right" },
-  { position: [-5.22, 2.25, 0.2], rotation: [0, Math.PI / 2, 0], side: "left" },
-  { position: [5.22, 2.32, -4.2], rotation: [0, -Math.PI / 2, 0], side: "right" },
-  { position: [-5.22, 2.25, -8.5], rotation: [0, Math.PI / 2, 0], side: "left" },
-  { position: [5.22, 2.2, -12.8], rotation: [0, -Math.PI / 2, 0], side: "right" },
-  { position: [-5.22, 2.25, -17], rotation: [0, Math.PI / 2, 0], side: "left" },
-  { position: [5.22, 2.2, -21], rotation: [0, -Math.PI / 2, 0], side: "right" },
+  { position: [6.06, 2.48, 7.7], rotation: [0, -Math.PI / 2, 0], focus: [3.55, 2.38, 7.9], side: "right", frame: "oak" },
+  { position: [-6.06, 2.38, 4.0], rotation: [0, Math.PI / 2, 0], focus: [-3.55, 2.3, 4.15], side: "left", frame: "white" },
+  { position: [6.06, 2.4, -0.3], rotation: [0, -Math.PI / 2, 0], focus: [3.55, 2.3, -0.15], side: "right", frame: "shadow" },
+  { position: [-6.06, 2.55, -4.8], rotation: [0, Math.PI / 2, 0], focus: [-3.55, 2.42, -4.65], side: "left", frame: "oak" },
+  { position: [3.0, 2.5, -10.35], rotation: [0, 0, 0], focus: [3.0, 2.35, -6.3], side: "front", frame: "shadow" },
+  { position: [-6.06, 2.38, -13.9], rotation: [0, Math.PI / 2, 0], focus: [-3.55, 2.3, -13.75], side: "left", frame: "white" },
+  { position: [6.06, 2.38, -17.8], rotation: [0, -Math.PI / 2, 0], focus: [3.55, 2.3, -17.65], side: "right", frame: "oak" },
+  { position: [-6.06, 2.38, -21.7], rotation: [0, Math.PI / 2, 0], focus: [-3.55, 2.3, -21.55], side: "left", frame: "shadow" },
 ];
 
 function useScrollProgress() {
@@ -54,24 +56,27 @@ function CameraController({ entered, selectedId, artworks, reducedMotion }: Omit
     const index = artworks.findIndex((artwork) => artwork.id === selectedId);
     if (index < 0) return null;
     const placement = placements[index];
-    const sideOffset = placement.side === "left" ? 3.15 : -3.15;
     return {
-      position: new THREE.Vector3(sideOffset, 2.25, placement.position[2] + 0.15),
-      target: new THREE.Vector3(placement.position[0], placement.position[1], placement.position[2]),
+      position: new THREE.Vector3(...placement.focus),
+      target: new THREE.Vector3(...placement.position),
     };
   }, [artworks, selectedId]);
-  const targetLook = useRef(new THREE.Vector3(0, 1.9, 2));
+  const targetLook = useRef(new THREE.Vector3(3.7, 2.42, 7.2));
 
   useFrame((state, delta) => {
-    const introDrift = entered || reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.22) * 0.08;
-    const z = 14 - progress.current * 36 + introDrift;
-    const routeX = Math.sin(progress.current * Math.PI * 2.2) * 0.42;
-    const routeY = 1.8 + Math.sin(progress.current * Math.PI) * 0.08;
+    const progressValue = progress.current;
+    const introDrift = entered || reducedMotion ? 0 : Math.sin(state.clock.elapsedTime * 0.2) * 0.055;
+    const z = 14.4 - progressValue * 38 + introDrift;
+    const entryOffset = THREE.MathUtils.lerp(-1.15, 0, Math.min(progressValue * 4, 1));
+    const routeX = entryOffset + Math.sin(progressValue * Math.PI * 2.4) * 0.65;
+    const routeY = 2.05 + Math.sin(progressValue * Math.PI) * 0.09;
+    const lookX = THREE.MathUtils.lerp(3.7, routeX * 0.25, Math.min(progressValue * 5, 1));
+    const lookZ = THREE.MathUtils.lerp(7.2, z - 6.2, Math.min(progressValue * 5, 1));
     const routePosition = new THREE.Vector3(routeX, routeY, z);
-    const routeLook = new THREE.Vector3(routeX * 0.35, 1.86, z - 5.5);
+    const routeLook = new THREE.Vector3(lookX, 2.25, lookZ);
     const desiredPosition = focus?.position ?? routePosition;
     const desiredLook = focus?.target ?? routeLook;
-    const speed = reducedMotion ? 18 : focus ? 4.6 : 2.3;
+    const speed = reducedMotion ? 18 : focus ? 4.5 : 2.15;
 
     camera.position.lerp(desiredPosition, 1 - Math.exp(-speed * delta));
     targetLook.current.lerp(desiredLook, 1 - Math.exp(-speed * delta));
@@ -105,26 +110,84 @@ function makePlaceholderTexture(artwork: ArtworkData) {
     context.fill();
   }
   context.globalAlpha = 1;
-  context.fillStyle = "rgba(245,242,235,.88)";
-  context.fillRect(38, 794, 220, 58);
+  context.fillStyle = "rgba(245,242,235,.9)";
+  context.fillRect(34, 798, 230, 58);
   context.fillStyle = "#25231f";
   context.font = "500 20px Arial";
   context.letterSpacing = "2px";
-  context.fillText("IMAGE SLOT", 60, 830);
+  context.fillText("IMAGE SLOT", 58, 834);
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = 8;
+  return texture;
+}
+
+function makePlasterTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 384;
+  canvas.height = 384;
+  const context = canvas.getContext("2d");
+  if (!context) return new THREE.CanvasTexture(canvas);
+  context.fillStyle = "#eeeae1";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  for (let index = 0; index < 9000; index += 1) {
+    const value = 220 + Math.floor(Math.random() * 24);
+    context.fillStyle = `rgba(${value},${value - 2},${value - 8},${0.02 + Math.random() * 0.035})`;
+    const size = Math.random() * 1.6 + 0.35;
+    context.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, size, size);
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(5, 14);
   texture.anisotropy = 4;
+  return texture;
+}
+
+function makeOakTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 1024;
+  canvas.height = 1024;
+  const context = canvas.getContext("2d");
+  if (!context) return new THREE.CanvasTexture(canvas);
+  context.fillStyle = "#bda47f";
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  const boardHeight = 116;
+  for (let row = 0; row < 10; row += 1) {
+    const y = row * boardHeight;
+    const warm = 158 + (row % 4) * 7;
+    context.fillStyle = `rgb(${warm + 31},${warm + 12},${warm - 16})`;
+    context.fillRect(0, y, canvas.width, boardHeight - 2);
+    context.fillStyle = "rgba(78,57,35,.17)";
+    context.fillRect(0, y + boardHeight - 2, canvas.width, 2);
+    const offset = row % 2 ? 330 : 0;
+    for (let seam = offset; seam < canvas.width; seam += 510) context.fillRect(seam, y, 2, boardHeight);
+    for (let line = 0; line < 18; line += 1) {
+      context.beginPath();
+      context.strokeStyle = `rgba(94,63,34,${0.025 + (line % 4) * 0.009})`;
+      context.lineWidth = 0.7;
+      const grainY = y + 8 + line * 5.5;
+      context.moveTo(0, grainY);
+      for (let x = 0; x <= canvas.width; x += 48) context.lineTo(x, grainY + Math.sin(x * 0.025 + row) * 2.2);
+      context.stroke();
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2.5, 11);
+  texture.anisotropy = 8;
   return texture;
 }
 
 function ArtworkImage({ url, width, height }: { url: string; width: number; height: number }) {
   const texture = useTexture(assetPath(url));
   texture.colorSpace = THREE.SRGBColorSpace;
-  texture.anisotropy = 4;
+  texture.anisotropy = 8;
   return (
     <mesh position={[0, 0, 0.052]}>
       <planeGeometry args={[width, height]} />
-      <meshStandardMaterial map={texture} roughness={0.82} />
+      <meshStandardMaterial map={texture} roughness={0.78} toneMapped={false} />
     </mesh>
   );
 }
@@ -133,9 +196,12 @@ function Artwork({ artwork, placement, selected, onSelect }: { artwork: ArtworkD
   const [hovered, setHovered] = useState(false);
   const texture = useMemo(() => makePlaceholderTexture(artwork), [artwork]);
   const group = useRef<THREE.Group>(null);
-  const aspect = artwork.widthCm / artwork.heightCm;
-  const height = 1.65;
-  const width = height * aspect;
+  const maxDimension = Math.max(artwork.widthCm, artwork.heightCm);
+  const scale = maxDimension > 135 ? 0.0175 : 0.0185;
+  const width = artwork.widthCm * scale;
+  const height = artwork.heightCm * scale;
+  const frameColor = placement.frame === "oak" ? "#8f7556" : placement.frame === "white" ? "#e8e3da" : "#34322d";
+  const frameMargin = placement.frame === "shadow" ? 0.035 : 0.075;
 
   useEffect(() => () => texture.dispose(), [texture]);
   useEffect(() => {
@@ -145,8 +211,8 @@ function Artwork({ artwork, placement, selected, onSelect }: { artwork: ArtworkD
 
   useFrame((_, delta) => {
     if (!group.current) return;
-    const scale = selected ? 1.035 : hovered ? 1.018 : 1;
-    group.current.scale.lerp(new THREE.Vector3(scale, scale, scale), 1 - Math.exp(-8 * delta));
+    const targetScale = selected ? 1.025 : hovered ? 1.012 : 1;
+    group.current.scale.lerp(new THREE.Vector3(targetScale, targetScale, targetScale), 1 - Math.exp(-8 * delta));
   });
 
   const handleClick = (event: ThreeEvent<MouseEvent>) => {
@@ -156,8 +222,8 @@ function Artwork({ artwork, placement, selected, onSelect }: { artwork: ArtworkD
 
   return (
     <group ref={group} position={placement.position} rotation={placement.rotation}>
-      <RoundedBox args={[width + 0.11, height + 0.11, 0.085]} radius={0.018} smoothness={4} castShadow>
-        <meshStandardMaterial color="#d9d0c1" roughness={0.55} metalness={0.03} />
+      <RoundedBox args={[width + frameMargin * 2, height + frameMargin * 2, 0.075]} radius={0.012} smoothness={3} castShadow>
+        <meshStandardMaterial color={frameColor} roughness={placement.frame === "oak" ? 0.58 : 0.76} metalness={0.01} />
       </RoundedBox>
       <group
         onClick={handleClick}
@@ -169,82 +235,203 @@ function Artwork({ artwork, placement, selected, onSelect }: { artwork: ArtworkD
         ) : (
           <mesh position={[0, 0, 0.052]}>
             <planeGeometry args={[width, height]} />
-            <meshStandardMaterial map={texture} roughness={0.82} />
+            <meshStandardMaterial map={texture} roughness={0.78} toneMapped={false} />
           </mesh>
         )}
       </group>
       {(hovered || selected) && (
-        <Html position={[0, -height / 2 - 0.28, 0.1]} center distanceFactor={6} transform sprite>
+        <Html position={[0, -height / 2 - 0.26, 0.1]} center distanceFactor={6} transform sprite>
           <button className="artwork-tooltip" onClick={onSelect}>
             <small>{artwork.titleEn}</small>
             <strong>{artwork.title}</strong>
           </button>
         </Html>
       )}
-      <mesh position={[0, -height / 2 - 0.18, 0.035]}>
-        <planeGeometry args={[0.35, 0.13]} />
-        <meshStandardMaterial color="#eeeae1" roughness={0.9} />
+      <mesh position={[0, -height / 2 - 0.16, 0.04]}>
+        <planeGeometry args={[0.38, 0.115]} />
+        <meshStandardMaterial color="#e7e2d9" roughness={0.92} />
       </mesh>
+    </group>
+  );
+}
+
+function Skylight({ z, length }: { z: number; length: number }) {
+  return (
+    <group position={[0, 6.08, z]}>
+      <mesh rotation={[Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[4.35, length]} />
+        <meshPhysicalMaterial color="#dfe8e5" roughness={0.28} transmission={0.08} emissive="#f9f7ed" emissiveIntensity={0.55} side={THREE.DoubleSide} />
+      </mesh>
+      <mesh position={[-2.38, -0.18, 0]}>
+        <boxGeometry args={[0.38, 0.38, length + 0.45]} />
+        <meshStandardMaterial color="#e4dfd5" roughness={0.88} />
+      </mesh>
+      <mesh position={[2.38, -0.18, 0]}>
+        <boxGeometry args={[0.38, 0.38, length + 0.45]} />
+        <meshStandardMaterial color="#e4dfd5" roughness={0.88} />
+      </mesh>
+      <mesh position={[0, -0.18, length / 2 + 0.2]}>
+        <boxGeometry args={[5.12, 0.38, 0.38]} />
+        <meshStandardMaterial color="#e4dfd5" roughness={0.88} />
+      </mesh>
+      <mesh position={[0, -0.18, -length / 2 - 0.2]}>
+        <boxGeometry args={[5.12, 0.38, 0.38]} />
+        <meshStandardMaterial color="#e4dfd5" roughness={0.88} />
+      </mesh>
+      <pointLight position={[0, -0.7, 0]} intensity={6.3} distance={10} decay={2} color="#fff7e8" />
     </group>
   );
 }
 
 function Architecture() {
-  const ribs = Array.from({ length: 10 }, (_, index) => 12 - index * 4.2);
+  const plaster = useMemo(() => makePlasterTexture(), []);
+  const oak = useMemo(() => makeOakTexture(), []);
+
+  useEffect(() => () => {
+    plaster.dispose();
+    oak.dispose();
+  }, [oak, plaster]);
+
   return (
     <group>
-      <mesh position={[0, -0.08, -4]} receiveShadow>
-        <boxGeometry args={[11, 0.16, 42]} />
-        <meshStandardMaterial color="#d8c6ab" roughness={0.72} />
+      <mesh position={[0, -0.09, -4.5]} receiveShadow>
+        <boxGeometry args={[12.8, 0.18, 46]} />
+        <meshStandardMaterial map={oak} bumpMap={oak} bumpScale={0.032} color="#eadac4" roughness={0.62} metalness={0.01} />
       </mesh>
-      <mesh position={[-5.45, 2.6, -4]} receiveShadow>
-        <boxGeometry args={[0.5, 5.2, 42]} />
-        <meshStandardMaterial color="#f5f2eb" roughness={0.96} />
+
+      <mesh position={[-6.28, 3.05, -4.5]} receiveShadow>
+        <boxGeometry args={[0.38, 6.1, 46]} />
+        <meshStandardMaterial map={plaster} bumpMap={plaster} bumpScale={0.018} color="#f1eee6" roughness={0.92} />
       </mesh>
-      <mesh position={[5.45, 2.6, -4]} receiveShadow>
-        <boxGeometry args={[0.5, 5.2, 42]} />
-        <meshStandardMaterial color="#f5f2eb" roughness={0.96} />
+      <mesh position={[6.28, 3.05, -4.5]} receiveShadow>
+        <boxGeometry args={[0.38, 6.1, 46]} />
+        <meshStandardMaterial map={plaster} bumpMap={plaster} bumpScale={0.018} color="#f1eee6" roughness={0.92} />
       </mesh>
-      <mesh position={[0, 5.18, -4]}>
-        <boxGeometry args={[11, 0.18, 42]} />
-        <meshStandardMaterial color="#ede9df" roughness={1} />
+
+      <mesh position={[-4.55, 6.14, -4.5]}>
+        <boxGeometry args={[3.3, 0.18, 46]} />
+        <meshStandardMaterial color="#e8e3d9" roughness={0.92} />
       </mesh>
-      <mesh position={[0, 2.5, -25.05]} receiveShadow>
-        <boxGeometry args={[11, 5, 0.2]} />
-        <meshStandardMaterial color="#eeeae1" roughness={1} />
+      <mesh position={[4.55, 6.14, -4.5]}>
+        <boxGeometry args={[3.3, 0.18, 46]} />
+        <meshStandardMaterial color="#e8e3d9" roughness={0.92} />
       </mesh>
-      {ribs.map((z, index) => (
-        <group key={z} position={[0, 0, z]}>
-          <mesh position={[0, 4.95, 0]} castShadow>
-            <boxGeometry args={[11, 0.26, 0.22]} />
-            <meshStandardMaterial color="#e1dcd1" roughness={0.9} />
-          </mesh>
-          {index % 2 === 0 && (
-            <mesh position={[0, 5.04, -0.55]}>
-              <boxGeometry args={[4.2, 0.04, 1.1]} />
-              <meshStandardMaterial color="#fffdf5" emissive="#fff9e9" emissiveIntensity={1.8} />
-            </mesh>
-          )}
-        </group>
-      ))}
-      <mesh position={[0, 1.55, -24.9]}>
-        <planeGeometry args={[3.2, 1.45]} />
-        <meshStandardMaterial color="#c6b795" roughness={0.85} />
+      <mesh position={[0, 6.14, 13.1]}>
+        <boxGeometry args={[5.8, 0.18, 3.2]} />
+        <meshStandardMaterial color="#e8e3d9" roughness={0.92} />
       </mesh>
-      <ContactShadows position={[0, 0.03, -4]} opacity={0.2} scale={32} blur={2.8} far={7} />
+      <mesh position={[0, 6.14, -24.2]}>
+        <boxGeometry args={[5.8, 0.18, 6.1]} />
+        <meshStandardMaterial color="#e8e3d9" roughness={0.92} />
+      </mesh>
+
+      <Skylight z={8.3} length={5.8} />
+      <Skylight z={-0.1} length={6.1} />
+      <Skylight z={-17.4} length={7.4} />
+
+      <mesh position={[-6.04, 0.16, -4.5]}>
+        <boxGeometry args={[0.12, 0.22, 46]} />
+        <meshStandardMaterial color="#9f927e" roughness={0.74} />
+      </mesh>
+      <mesh position={[6.04, 0.16, -4.5]}>
+        <boxGeometry args={[0.12, 0.22, 46]} />
+        <meshStandardMaterial color="#9f927e" roughness={0.74} />
+      </mesh>
+
+      <group position={[3.95, 2.65, -10.65]}>
+        <mesh receiveShadow>
+          <boxGeometry args={[4.6, 5.3, 0.38]} />
+          <meshStandardMaterial map={plaster} bumpMap={plaster} bumpScale={0.015} color="#eee9df" roughness={0.9} />
+        </mesh>
+        <mesh position={[-2.34, 0, 0]}>
+          <boxGeometry args={[0.08, 5.3, 0.48]} />
+          <meshStandardMaterial color="#b9ab95" roughness={0.76} />
+        </mesh>
+      </group>
+
+      <mesh position={[0, 3.05, -27.45]} receiveShadow>
+        <boxGeometry args={[12.8, 6.1, 0.38]} />
+        <meshStandardMaterial color="#e7e0d3" roughness={0.94} />
+      </mesh>
+      <mesh position={[-2.4, 2.42, -27.22]}>
+        <planeGeometry args={[3.6, 4.65]} />
+        <meshStandardMaterial color="#a79680" roughness={0.88} />
+      </mesh>
+      <mesh position={[-2.4, 2.42, -27.12]}>
+        <planeGeometry args={[2.95, 4.05]} />
+        <meshStandardMaterial color="#787266" roughness={0.92} />
+      </mesh>
+      <RoundedBox args={[1.55, 1.2, 1.55]} radius={0.035} smoothness={4} position={[2.55, 0.6, -24.85]} castShadow receiveShadow>
+        <meshStandardMaterial color="#d6cec0" roughness={0.86} />
+      </RoundedBox>
+      <mesh position={[2.55, 1.48, -24.85]} castShadow>
+        <icosahedronGeometry args={[0.54, 2]} />
+        <meshStandardMaterial color="#7e887f" roughness={0.62} metalness={0.04} />
+      </mesh>
+
+      <RoundedBox args={[2.9, 0.42, 0.92]} radius={0.14} smoothness={5} position={[-0.9, 0.23, -3.0]} castShadow receiveShadow>
+        <meshStandardMaterial color="#b9a68c" roughness={0.72} />
+      </RoundedBox>
+
+      <mesh position={[-6.065, 2.8, -1.1]}>
+        <planeGeometry args={[0.02, 3.6]} />
+        <meshStandardMaterial color="#d7d0c4" roughness={0.9} />
+      </mesh>
+      <mesh position={[6.065, 2.8, -14.8]}>
+        <planeGeometry args={[0.02, 3.8]} />
+        <meshStandardMaterial color="#d7d0c4" roughness={0.9} />
+      </mesh>
+
+      <ContactShadows position={[0, 0.025, -4.5]} opacity={0.18} scale={35} blur={3.4} far={5.5} color="#716756" />
+    </group>
+  );
+}
+
+function ArtworkLighting() {
+  return (
+    <group>
+      {placements.map((placement, index) => {
+        const [x, , z] = placement.position;
+        const lightX = placement.side === "left" ? -4.65 : placement.side === "right" ? 4.65 : x;
+        const lightZ = placement.side === "front" ? z + 1.4 : z;
+        return <pointLight key={index} position={[lightX, 4.4, lightZ]} intensity={3.9} distance={5.2} decay={2} color="#fff0d6" />;
+      })}
     </group>
   );
 }
 
 function GalleryWorld({ artworks, entered, selectedId, reducedMotion, onSelect }: GallerySceneProps) {
+  const { gl } = useThree();
+
+  useEffect(() => {
+    gl.toneMapping = THREE.ACESFilmicToneMapping;
+    gl.toneMappingExposure = 0.98;
+    gl.outputColorSpace = THREE.SRGBColorSpace;
+  }, [gl]);
+
   return (
     <>
-      <color attach="background" args={["#eeeae2"]} />
-      <fog attach="fog" args={["#eeeae2", 13, 48]} />
-      <ambientLight intensity={1.35} color="#fff6e8" />
-      <directionalLight position={[1.5, 8, 8]} intensity={2.4} color="#fff7e6" castShadow shadow-mapSize={[1024, 1024]} />
-      <directionalLight position={[-5, 4, -12]} intensity={1.1} color="#d9e5e2" />
+      <color attach="background" args={["#d9ddd8"]} />
+      <fog attach="fog" args={["#e5e2da", 22, 58]} />
+      <hemisphereLight args={["#eef5f2", "#8f806d", 1.2]} />
+      <ambientLight intensity={0.38} color="#fff4e6" />
+      <directionalLight
+        position={[-4, 11, 8]}
+        intensity={1.7}
+        color="#fff7e8"
+        castShadow
+        shadow-mapSize={[2048, 2048]}
+        shadow-bias={-0.00012}
+        shadow-camera-left={-13}
+        shadow-camera-right={13}
+        shadow-camera-top={10}
+        shadow-camera-bottom={-4}
+        shadow-camera-near={1}
+        shadow-camera-far={42}
+      />
+      <directionalLight position={[7, 5, -18]} intensity={0.48} color="#dce7e4" />
       <Architecture />
+      <ArtworkLighting />
       {artworks.map((artwork, index) => (
         <Artwork
           key={artwork.id}
@@ -264,8 +451,8 @@ export default function GalleryScene(props: GallerySceneProps) {
     <div className="canvas-shell" aria-label="Interactive three-dimensional art gallery">
       <Canvas
         dpr={[1, 1.5]}
-        camera={{ position: [0, 1.8, 14], fov: 56, near: 0.1, far: 80 }}
-        shadows
+        camera={{ position: [-1.15, 2.05, 14.4], fov: 50, near: 0.1, far: 90 }}
+        shadows={{ type: THREE.PCFSoftShadowMap }}
         gl={{ antialias: true, powerPreference: "high-performance", alpha: false }}
         onPointerMissed={() => props.onSelect(null)}
       >

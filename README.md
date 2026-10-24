@@ -24,6 +24,7 @@ The deployable site is written to `out/`. Preview it with any static HTTP server
 
 - Artwork metadata lives in [`data/artworks.json`](./data/artworks.json).
 - Approved images should be placed in [`public/artworks/`](./public/artworks/).
+- Current artwork-file status and required filenames are documented in [`docs/artwork-assets.md`](./docs/artwork-assets.md).
 - Freepik concept references can be added to [`references/freepik/`](./references/freepik/).
 
 No artwork images from the existing public site are bundled in this prototype because reuse rights have not yet been confirmed. The colour fields in the room are clearly labelled temporary image slots.
