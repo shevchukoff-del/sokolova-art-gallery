@@ -23,3 +23,15 @@ The neutral canvases shown in both concepts are generic colour studies, not work
 ### Refinement prompt
 
 > Refine the supplied gallery concept into a top-tier photorealistic contemporary art gallery while preserving its core layout: the softly rounded freestanding partition on the left, three rectangular skylights, pale oak floor, warm ivory plaster, asymmetrical entrance viewpoint and clear forward walking route. Make the space feel taller, airier and slightly wider, with a more generous opening around the curved partition so it does not read as a narrow corridor. Keep one large artwork plane prominent on the right foreground wall and two additional artwork planes clearly visible deeper in the gallery. Use neutral abstract color-block studies only, with no recognizable artist style and no invented signature. Improve the museum hanging heights and spacing. Replace harsh sun patches with soft diffused daylight, controlled highlights, subtle contact shadows and discreet museum-grade track lights. Add precise material joints, flush pale baseboards, refined oak grain, a minimal bench, and a small distant sculpture niche as the terminal focal point. Human eye-level architectural photography, physically believable materials, calm luxurious atmosphere, no people, no text, no logos, no watermark, no neon, no fantasy geometry. The image must remain a practical blueprint for reconstruction as real Three.js geometry, not a matte painting.
+
+## Multi-view pilot
+
+Generated from recommended concept `eIlyUf7dqL` with Magnific Change Camera and Depth Anything 3:
+
+- `gallery-pilot-left-25.png` — creation `LwVotbAswO`, nominal camera rotation −25°.
+- `gallery-pilot-right-25.png` — creation `gOptvF8SXO`, nominal camera rotation +25°.
+- `gallery-pilot-depth.png` — creation `6AaqKPyiJO`, 16-bit grayscale depth estimate.
+
+### Assessment
+
+The pilot preserves the core visual language and the most important spatial anchors: curved partition, pale oak floor, warm plaster and skylights. It is not pixel-consistent multi-view photography: the right view removes artworks and invents additional columns; the left view changes furniture details. Therefore these images must not be stitched directly into a cubemap. They are suitable as inputs to a world model that performs spatial reconciliation, or as secondary art-direction references for the existing Three.js proxy geometry.
