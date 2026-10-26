@@ -12,5 +12,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${siteUrl}/artwear/`, changeFrequency: "monthly", priority: 0.8 },
     { url: `${siteUrl}/interiors/`, lastModified: "2026-10-25", changeFrequency: "monthly", priority: 0.8 },
     { url: `${siteUrl}/press/`, lastModified: "2026-10-24", changeFrequency: "monthly", priority: 0.8 },
+    { url: `${siteUrl}/privacy/`, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${siteUrl}/consent/`, changeFrequency: "yearly", priority: 0.2 },
   ];
 }

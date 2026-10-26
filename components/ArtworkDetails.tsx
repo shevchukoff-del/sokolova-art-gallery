@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import type { ArtworkData } from "@/lib/types";
 import { assetPath } from "@/lib/assetPath";
 import ArrowIcon from "./ArrowIcon";
@@ -17,23 +17,17 @@ type ArtworkDetailsProps = {
 
 export default function ArtworkDetails({ artwork, isTransitioning, position, total, onClose, onPrevious, onNext }: ArtworkDetailsProps) {
   const isOpen = Boolean(artwork);
-  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const touchStart = useRef<{ x: number; time: number } | null>(null);
-
-  useEffect(() => {
-    setIsInfoOpen(false);
-  }, [artwork?.id]);
 
   useEffect(() => {
     if (!artwork) return;
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
-      if (isInfoOpen) setIsInfoOpen(false);
-      else onClose();
+      onClose();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [artwork, isInfoOpen, onClose]);
+  }, [artwork, onClose]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -57,7 +51,7 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
   }, [isOpen]);
 
   return (
-    <aside className={`artwork-details ${artwork ? "is-open" : ""} ${isTransitioning ? "is-transitioning" : ""} ${isInfoOpen ? "is-info-open" : ""}`} aria-hidden={!artwork} aria-live="polite" aria-busy={isTransitioning}>
+    <aside className={`artwork-details ${artwork ? "is-open" : ""} ${isTransitioning ? "is-transitioning" : ""}`} aria-hidden={!artwork} aria-live="polite" aria-busy={isTransitioning}>
       {artwork && (
         <>
           <div className="details-desktop">
@@ -73,13 +67,13 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
             <DetailsNavigation isTransitioning={isTransitioning} onPrevious={onPrevious} onNext={onNext} />
           </div>
 
-          <div className="details-mobile-viewer" inert={isInfoOpen}>
+          <div className="details-mobile-viewer">
             <header className="details-viewer-header">
-              <span>{position && total ? `${String(position).padStart(2, "0")} / ${String(total).padStart(2, "0")}` : "Просмотр работы"}</span>
               <button type="button" onClick={onClose} aria-label="Закрыть просмотр работы">×</button>
             </header>
             <figure
               className="details-mobile-artwork"
+              key={`artwork-${artwork.id}`}
               onTouchStart={(event) => {
                 const touch = event.touches[0];
                 if (touch) touchStart.current = { x: touch.clientX, time: Date.now() };
@@ -102,35 +96,39 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
                 <div className="details-mobile-placeholder" style={{ background: `linear-gradient(145deg, ${artwork.palette.join(", ")})` }} />
               )}
             </figure>
-            <div className="details-viewer-title">
-              <p>Екатерина Соколова</p>
-              <h2>{artwork.title}</h2>
-            </div>
             <div className="details-viewer-actions">
               <button type="button" onClick={onPrevious} disabled={isTransitioning} aria-label="Предыдущая работа"><ArrowIcon direction="left" /></button>
-              <button className="details-open-info" type="button" onClick={() => setIsInfoOpen(true)}>
-                <span>Подробнее</span><ArrowIcon />
-              </button>
               <button type="button" onClick={onNext} disabled={isTransitioning} aria-label="Следующая работа"><ArrowIcon direction="right" /></button>
             </div>
+            <section className="details-mobile-content" aria-label={`Информация о работе «${artwork.title}»`} key={`content-${artwork.id}`}>
+              <div className="details-viewer-title">
+                <p>Екатерина Соколова</p>
+                <h2>{artwork.title}</h2>
+              </div>
+              <MobileArtworkSummary artwork={artwork} />
+              {!artwork.image && <p className="rights-note">Изображение работы ожидает подтверждения прав. В экспозиции временно показан цветовой эскиз.</p>}
+              <InquiryLink artwork={artwork} />
+            </section>
           </div>
-
-          <section className="details-mobile-info" aria-hidden={!isInfoOpen} inert={!isInfoOpen} aria-label={`Информация о работе «${artwork.title}»`}>
-            <header>
-              <span>О работе</span>
-              <button type="button" onClick={() => setIsInfoOpen(false)} aria-label="Закрыть описание работы">×</button>
-            </header>
-            <div className="details-info-heading">
-              <p className="details-eyebrow">Екатерина Соколова</p>
-              <h2>{artwork.title}</h2>
-            </div>
-            <ArtworkFacts artwork={artwork} />
-            {!artwork.image && <p className="rights-note">Изображение работы ожидает подтверждения прав. В экспозиции временно показан цветовой эскиз.</p>}
-            <InquiryLink artwork={artwork} />
-          </section>
         </>
       )}
     </aside>
+  );
+}
+
+function MobileArtworkSummary({ artwork }: { artwork: ArtworkData }) {
+  return (
+    <div className="details-mobile-summary">
+      <p>
+        <span>{artwork.medium}</span>
+        <span>{artwork.widthCm} × {artwork.heightCm} см</span>
+        {artwork.year && <span>{artwork.year}</span>}
+      </p>
+      <p>
+        <span>{artwork.status === "available" ? "Доступна" : "В частной коллекции"}</span>
+        {artwork.status === "available" && <strong>{artwork.price ?? "Цена по запросу"}</strong>}
+      </p>
+    </div>
   );
 }
 
@@ -149,7 +147,7 @@ function ArtworkFacts({ artwork }: { artwork: ArtworkData }) {
 function InquiryLink({ artwork }: { artwork: ArtworkData }) {
   return (
     <a className="inquiry-link" href={`mailto:katja.sokolova@gmail.com?subject=${encodeURIComponent(`Запрос о работе «${artwork.title}»`)}`}>
-      <span>Узнать о работе</span><i><ArrowIcon /></i>
+      <span>Связаться</span><i><ArrowIcon /></i>
     </a>
   );
 }

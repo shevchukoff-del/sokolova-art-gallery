@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { ArtworkData } from "@/lib/types";
 import { assetPath } from "@/lib/assetPath";
@@ -9,7 +10,7 @@ import ArrowIcon from "./ArrowIcon";
 type GalleryFilter = "all" | "available" | "archive";
 
 const filters: { id: GalleryFilter; label: string }[] = [
-  { id: "all", label: "Все" },
+  { id: "all", label: "Все работы" },
   { id: "available", label: "В наличии" },
   { id: "archive", label: "Архив" },
 ];
@@ -60,7 +61,9 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
   const [activeFilter, setActiveFilter] = useState<GalleryFilter>("all");
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
+  const heroRoot = useRef<HTMLElement | null>(null);
   const heroVideo = useRef<HTMLVideoElement | null>(null);
+  const wasHeroVisible = useRef(false);
   const touchStartX = useRef<number | null>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeHeroSlide = heroSlides[activeHeroIndex] ?? heroSlides[0];
@@ -95,6 +98,32 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
   }, []);
 
   useEffect(() => {
+    const resetHero = () => {
+      setActiveHeroIndex(0);
+      setIsHeroPaused(false);
+    };
+    const resetHeroAtTop = () => {
+      if (!window.location.hash || window.location.hash === "#top") resetHero();
+    };
+    const root = heroRoot.current;
+    const observer = root ? new IntersectionObserver(([entry]) => {
+      const isVisible = entry.isIntersecting;
+      if (isVisible && !wasHeroVisible.current) resetHero();
+      wasHeroVisible.current = isVisible;
+    }, { threshold: [0] }) : null;
+
+    resetHeroAtTop();
+    if (root) observer?.observe(root);
+    window.addEventListener("pageshow", resetHero);
+    window.addEventListener("hashchange", resetHeroAtTop);
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener("pageshow", resetHero);
+      window.removeEventListener("hashchange", resetHeroAtTop);
+    };
+  }, []);
+
+  useEffect(() => {
     const video = heroVideo.current;
     if (!video) return;
     if (activeHeroIndex === 0 && !reducedMotion) {
@@ -120,9 +149,9 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
   }, []);
 
   return (
-    <main className="mobile-gallery">
+    <main id="top" className="mobile-gallery">
       <SiteHeader current="gallery" variant="gallery" />
-      <section className="mobile-artist-hero" aria-labelledby="mobile-artist-title">
+      <section ref={heroRoot} className="mobile-artist-hero" aria-labelledby="mobile-artist-title">
         <figure
           className="mobile-artist-work"
           aria-roledescription="карусель"
@@ -180,7 +209,6 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
           </div>
         </div>
         <div className="mobile-artist-meta" aria-live="polite">
-          <span>{activeHeroSlide.title}</span>
           <div className="mobile-artist-progress">
             <div className="mobile-artist-progress-track" aria-hidden="true">
               {heroSlides.map((slide, index) => (
@@ -199,11 +227,17 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
               onPointerDown={pauseHeroTemporarily}
             />
           </div>
-          <span>{String(activeHeroIndex + 1).padStart(2, "0")} / {String(heroSlides.length).padStart(2, "0")}</span>
         </div>
       </section>
-      <section id="works" className="mobile-works" aria-label="Каталог работ">
-        <div className="mobile-section-title"><span>Каталог работ</span><span>{String(filteredArtworks.length).padStart(2, "0")}</span></div>
+      <section id="works" className="mobile-gallery-interlude" aria-labelledby="mobile-gallery-quote">
+        <blockquote id="mobile-gallery-quote">
+          <span>«Работа для меня — это один из способов</span>
+          <i>общения с миром, размышление о жизни».</i>
+        </blockquote>
+        <cite>Екатерина Соколова</cite>
+      </section>
+      <section className="mobile-works" aria-label="Каталог работ">
+        <header className="mobile-section-title"><h2><span>Каталог</span> <i>работ</i></h2></header>
         <div className="mobile-filters" role="group" aria-label="Фильтр работ">
           {filters.map((filter) => (
             <button
@@ -219,31 +253,49 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
         </div>
         <div className="mobile-work-list" aria-live="polite">
         {filteredArtworks.map((artwork, index) => (
-          <article className={`mobile-work ${index % 2 === 1 ? "is-left" : "is-right"}`} key={artwork.id}>
+          <article className="mobile-work" key={artwork.id}>
             <button
               className="mobile-placeholder"
-              style={{
-                aspectRatio: artwork.imageAspectRatio ?? `${artwork.widthCm} / ${artwork.heightCm}`,
-                background: artwork.image
-                  ? `center / cover no-repeat url("${assetPath(artwork.image)}")`
-                  : `linear-gradient(145deg, ${artwork.palette.join(", ")})`,
+              style={artwork.image ? undefined : {
+                aspectRatio: `${artwork.widthCm} / ${artwork.heightCm}`,
+                background: `linear-gradient(145deg, ${artwork.palette.join(", ")})`,
               }}
               onClick={() => onSelect(artwork.id)}
               aria-label={`Открыть информацию о работе «${artwork.title}»`}
             >
+              {artwork.image && <img src={assetPath(artwork.image)} alt="" loading="lazy" />}
               {!artwork.image && <span>Изображение · {String(index + 1).padStart(2, "0")}</span>}
             </button>
-            <button className="mobile-work-caption" onClick={() => onSelect(artwork.id)}>
+            <div className="mobile-work-caption">
               <span><b>{artwork.title}</b><small>{artwork.medium}</small><em>{artwork.status === "available" ? "В наличии" : "Архив"}</em></span>
               <span>{artwork.widthCm} × {artwork.heightCm} см</span>
+            </div>
+            <button className="mobile-work-open" type="button" onClick={() => onSelect(artwork.id)}>
+              <span>Узнать о работе</span><ArrowIcon />
             </button>
           </article>
         ))}
         </div>
       </section>
       <footer className="mobile-footer">
-        <p>Екатерина Соколова</p>
-        <a href="mailto:katja.sokolova@gmail.com"><span>Связаться с художницей</span><ArrowIcon /></a>
+        <a className="mobile-footer-brand" href="#top" aria-label="В начало страницы"><span>Sokolova</span><i>Art</i></a>
+        <nav aria-label="Навигация в подвале">
+          <Link href="/">Галерея</Link>
+          <Link href="/works/">Каталог работ</Link>
+          <Link href="/about/">Об авторе</Link>
+          <Link href="/artwear/">Artwear</Link>
+          <Link href="/interiors/">Роспись интерьеров</Link>
+          <Link href="/press/">Выставки и публикации</Link>
+        </nav>
+        <a className="mobile-footer-contact" href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
+        <div className="mobile-footer-bottom">
+          <div>
+            <Link href="/privacy/">Политика конфиденциальности</Link>
+            <Link href="/consent/">Согласие на обработку данных</Link>
+            <span>© 2026</span>
+          </div>
+          <a className="mobile-footer-top" href="#top"><span>Наверх</span><ArrowIcon /></a>
+        </div>
       </footer>
     </main>
   );

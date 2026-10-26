@@ -39,7 +39,9 @@ export default function SiteHeader({ current, meta, variant, onHome }: SiteHeade
 
   return (
     <header className={`${variant}-header site-header ${open ? "is-menu-open" : ""}`}>
-      <Link className={`${variant}-wordmark`} href="/" onClick={onHome}>Sokolova Art</Link>
+      <Link className={`${variant}-wordmark site-wordmark`} href="/" onClick={onHome}>
+        <span>Sokolova</span><i>Art</i>
+      </Link>
       <button
         className="site-menu-toggle"
         type="button"
@@ -52,7 +54,6 @@ export default function SiteHeader({ current, meta, variant, onHome }: SiteHeade
       </button>
       <button className="site-menu-scrim" type="button" aria-label="Закрыть меню" tabIndex={open ? 0 : -1} onClick={() => setOpen(false)} />
       <nav id={`${variant}-navigation`} aria-label="Основная навигация">
-        <small>Навигация</small>
         {links.map((link) => (
           <Link
             key={link.id}
