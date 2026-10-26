@@ -10,6 +10,7 @@
     "price": "250 000 ₽",
     "status": "available",
     "image": "/artworks/krasnaya-moskva.webp",
+    "imageAspectRatio": 1.511,
     "palette": ["#bd2634", "#e38845", "#2d4d61", "#f4d7bc"]
   },
   {
@@ -23,6 +24,7 @@
     "price": "240 000 ₽",
     "status": "available",
     "image": "/artworks/paporotnik.webp",
+    "imageAspectRatio": 1.401,
     "palette": ["#294a39", "#95aa72", "#e6bc73", "#f4ede0"]
   },
   {
@@ -36,6 +38,7 @@
     "price": "250 000 ₽",
     "status": "available",
     "image": "/artworks/flamingo.webp",
+    "imageAspectRatio": 1.2,
     "palette": ["#e26678", "#f3b8a7", "#264b50", "#d9d69b"]
   },
   {
@@ -49,6 +52,7 @@
     "price": null,
     "status": "sold",
     "image": "/artworks/belie-lilii.webp",
+    "imageAspectRatio": 1.752,
     "palette": ["#ebe6d6", "#c9cbaf", "#80684f", "#c96551"]
   },
   {
@@ -62,6 +66,7 @@
     "price": "210 000 ₽",
     "status": "available",
     "image": "/artworks/nochnaya-smena.webp",
+    "imageAspectRatio": 1.423,
     "palette": ["#152a3b", "#825b68", "#dfa55c", "#b4c2bd"]
   },
   {
@@ -75,6 +80,7 @@
     "price": "200 000 ₽",
     "status": "available",
     "image": "/artworks/utrennyaya-italiya.webp",
+    "imageAspectRatio": 0.709,
     "palette": ["#e0a860", "#8fa99f", "#c2664f", "#eee0bd"]
   },
   {
@@ -88,6 +94,7 @@
     "price": "100 000 ₽",
     "status": "available",
     "image": "/artworks/lilovaya-siren.webp",
+    "imageAspectRatio": 1.172,
     "palette": ["#68537c", "#b9a6c9", "#78966d", "#f0d5c5"]
   },
   {
@@ -101,6 +108,7 @@
     "price": "100 000 ₽",
     "status": "available",
     "image": "/artworks/gorod-nochyu.webp",
+    "imageAspectRatio": 1.58,
     "palette": ["#26344e", "#d4614f", "#e1b34f", "#7894a8"]
   },
   {
@@ -114,6 +122,49 @@
     "price": null,
     "status": "sold",
     "image": "/artworks/gostinitsa-ukraina.webp",
+    "imageAspectRatio": 0.778,
     "palette": ["#172a4b", "#d76d49", "#eee0bd", "#7193b5"]
+  },
+  {
+    "id": "mgu",
+    "title": "МГУ",
+    "titleEn": "Moscow State University",
+    "year": null,
+    "widthCm": 60,
+    "heightCm": 50,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/mgu.webp",
+    "imageAspectRatio": 1.34,
+    "palette": ["#5394b8", "#e6be78", "#754b45", "#ded8c4"]
+  },
+  {
+    "id": "morskaya-rakovina",
+    "title": "Морская раковина",
+    "titleEn": "Seashell",
+    "year": null,
+    "widthCm": 90,
+    "heightCm": 70,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/morskaya-rakovina.webp",
+    "imageAspectRatio": 1.288,
+    "palette": ["#d5b99c", "#876354", "#ebe3d7", "#647c84"]
+  },
+  {
+    "id": "zelenaya-zhemchuzhina",
+    "title": "Зелёная жемчужина",
+    "titleEn": "Green Pearl",
+    "year": null,
+    "widthCm": 100,
+    "heightCm": 100,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/zelenaya-zhemchuzhina.webp",
+    "imageAspectRatio": 0.984,
+    "palette": ["#accbb3", "#b58c9d", "#e8e8dd", "#587c72"]
   }
 ]

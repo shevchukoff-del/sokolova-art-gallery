@@ -1,6 +1,6 @@
 # Artwork images
 
-The nine prototype images in this directory come from Ekaterina Sokolova's official catalogue:
+The twelve prototype images in this directory come from Ekaterina Sokolova's official catalogue:
 <https://sokolova-art.com/gallery>.
 
 They were selected and downloaded on 24 October 2026, then converted to sRGB WebP at a maximum

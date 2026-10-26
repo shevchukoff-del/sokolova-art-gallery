@@ -5,3 +5,7 @@ out
 npm-debug.log*
 *.tsbuildinfo
 .playwright-cli
+output/playwright/
+.env*
+!.env.example
+.herenow/state.json

@@ -1,40 +1,164 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { ArtworkData } from "@/lib/types";
+import { assetPath } from "@/lib/assetPath";
+import ArrowIcon from "./ArrowIcon";
 
-export default function ArtworkDetails({ artwork, onClose }: { artwork: ArtworkData | null; onClose: () => void }) {
+type ArtworkDetailsProps = {
+  artwork: ArtworkData | null;
+  isTransitioning: boolean;
+  position?: number;
+  total?: number;
+  onClose: () => void;
+  onPrevious: () => void;
+  onNext: () => void;
+};
+
+export default function ArtworkDetails({ artwork, isTransitioning, position, total, onClose, onPrevious, onNext }: ArtworkDetailsProps) {
+  const isOpen = Boolean(artwork);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const touchStart = useRef<{ x: number; time: number } | null>(null);
+
+  useEffect(() => {
+    setIsInfoOpen(false);
+  }, [artwork?.id]);
+
   useEffect(() => {
     if (!artwork) return;
     const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") onClose();
+      if (event.key !== "Escape") return;
+      if (isInfoOpen) setIsInfoOpen(false);
+      else onClose();
     };
     window.addEventListener("keydown", closeOnEscape);
     return () => window.removeEventListener("keydown", closeOnEscape);
-  }, [artwork, onClose]);
+  }, [artwork, isInfoOpen, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const body = document.body;
+    const root = document.documentElement;
+    const scrollPosition = window.scrollY;
+    const previous = {
+      overflow: body.style.overflow,
+      rootOverflow: root.style.overflow,
+      overscrollBehavior: root.style.overscrollBehavior,
+    };
+    body.style.overflow = "hidden";
+    root.style.overflow = "hidden";
+    root.style.overscrollBehavior = "none";
+    return () => {
+      body.style.overflow = previous.overflow;
+      root.style.overflow = previous.rootOverflow;
+      root.style.overscrollBehavior = previous.overscrollBehavior;
+      window.scrollTo(0, scrollPosition);
+    };
+  }, [isOpen]);
 
   return (
-    <aside className={`artwork-details ${artwork ? "is-open" : ""}`} aria-hidden={!artwork} aria-live="polite">
+    <aside className={`artwork-details ${artwork ? "is-open" : ""} ${isTransitioning ? "is-transitioning" : ""} ${isInfoOpen ? "is-info-open" : ""}`} aria-hidden={!artwork} aria-live="polite" aria-busy={isTransitioning}>
       {artwork && (
         <>
-          <button className="details-close" onClick={onClose} aria-label="Close artwork details">×</button>
-          <div className="details-number">Selected work</div>
-          <div>
-            <p className="details-eyebrow">{artwork.titleEn}</p>
-            <h2>{artwork.title}</h2>
+          <div className="details-desktop">
+            <button className="details-close" onClick={onClose} aria-label="Закрыть информацию о работе">×</button>
+            <div className="details-number">О работе</div>
+            <div className="details-heading">
+              <p className="details-eyebrow">Екатерина Соколова</p>
+              <h2>{artwork.title}</h2>
+            </div>
+            <ArtworkFacts artwork={artwork} />
+            {!artwork.image && <p className="rights-note">Изображение работы ожидает подтверждения прав. В экспозиции временно показан цветовой эскиз.</p>}
+            <InquiryLink artwork={artwork} />
+            <DetailsNavigation isTransitioning={isTransitioning} onPrevious={onPrevious} onNext={onNext} />
           </div>
-          <dl>
-            {artwork.year && <><dt>Year</dt><dd>{artwork.year}</dd></>}
-            <dt>Dimensions</dt><dd>{artwork.widthCm} × {artwork.heightCm} cm</dd>
-            <dt>Medium</dt><dd>{artwork.medium}</dd>
-            <dt>Status</dt><dd>{artwork.status === "available" ? artwork.price ?? "По запросу" : "В частной коллекции"}</dd>
-          </dl>
-          {!artwork.image && <p className="rights-note">Artwork image pending rights approval. The colour study shown in the room is a placeholder.</p>}
-          <a className="inquiry-link" href={`mailto:katja.sokolova@gmail.com?subject=${encodeURIComponent(`Запрос о работе «${artwork.title}»`)}`}>
-            <span>Request information</span><i>↗</i>
-          </a>
+
+          <div className="details-mobile-viewer" inert={isInfoOpen}>
+            <header className="details-viewer-header">
+              <span>{position && total ? `${String(position).padStart(2, "0")} / ${String(total).padStart(2, "0")}` : "Просмотр работы"}</span>
+              <button type="button" onClick={onClose} aria-label="Закрыть просмотр работы">×</button>
+            </header>
+            <figure
+              className="details-mobile-artwork"
+              onTouchStart={(event) => {
+                const touch = event.touches[0];
+                if (touch) touchStart.current = { x: touch.clientX, time: Date.now() };
+              }}
+              onTouchEnd={(event) => {
+                const start = touchStart.current;
+                const touch = event.changedTouches[0];
+                touchStart.current = null;
+                if (!start || !touch) return;
+                const distance = touch.clientX - start.x;
+                const velocity = Math.abs(distance) / Math.max(Date.now() - start.time, 1);
+                if (Math.abs(distance) < 52 && velocity < 0.32) return;
+                if (distance < 0) onNext();
+                else onPrevious();
+              }}
+            >
+              {artwork.image ? (
+                <img src={assetPath(artwork.image)} alt={artwork.title} />
+              ) : (
+                <div className="details-mobile-placeholder" style={{ background: `linear-gradient(145deg, ${artwork.palette.join(", ")})` }} />
+              )}
+            </figure>
+            <div className="details-viewer-title">
+              <p>Екатерина Соколова</p>
+              <h2>{artwork.title}</h2>
+            </div>
+            <div className="details-viewer-actions">
+              <button type="button" onClick={onPrevious} disabled={isTransitioning} aria-label="Предыдущая работа"><ArrowIcon direction="left" /></button>
+              <button className="details-open-info" type="button" onClick={() => setIsInfoOpen(true)}>
+                <span>Подробнее</span><ArrowIcon />
+              </button>
+              <button type="button" onClick={onNext} disabled={isTransitioning} aria-label="Следующая работа"><ArrowIcon direction="right" /></button>
+            </div>
+          </div>
+
+          <section className="details-mobile-info" aria-hidden={!isInfoOpen} inert={!isInfoOpen} aria-label={`Информация о работе «${artwork.title}»`}>
+            <header>
+              <span>О работе</span>
+              <button type="button" onClick={() => setIsInfoOpen(false)} aria-label="Закрыть описание работы">×</button>
+            </header>
+            <div className="details-info-heading">
+              <p className="details-eyebrow">Екатерина Соколова</p>
+              <h2>{artwork.title}</h2>
+            </div>
+            <ArtworkFacts artwork={artwork} />
+            {!artwork.image && <p className="rights-note">Изображение работы ожидает подтверждения прав. В экспозиции временно показан цветовой эскиз.</p>}
+            <InquiryLink artwork={artwork} />
+          </section>
         </>
       )}
     </aside>
+  );
+}
+
+function ArtworkFacts({ artwork }: { artwork: ArtworkData }) {
+  return (
+    <dl>
+      {artwork.year && <><dt>Год</dt><dd>{artwork.year}</dd></>}
+      <dt>Размер</dt><dd>{artwork.widthCm} × {artwork.heightCm} см</dd>
+      <dt>Материал</dt><dd>{artwork.medium}</dd>
+      <dt>Статус</dt><dd>{artwork.status === "available" ? "Доступна" : "В частной коллекции"}</dd>
+      {artwork.status === "available" && <><dt>Цена</dt><dd>{artwork.price ?? "По запросу"}</dd></>}
+    </dl>
+  );
+}
+
+function InquiryLink({ artwork }: { artwork: ArtworkData }) {
+  return (
+    <a className="inquiry-link" href={`mailto:katja.sokolova@gmail.com?subject=${encodeURIComponent(`Запрос о работе «${artwork.title}»`)}`}>
+      <span>Узнать о работе</span><i><ArrowIcon /></i>
+    </a>
+  );
+}
+
+function DetailsNavigation({ isTransitioning, onPrevious, onNext }: Pick<ArtworkDetailsProps, "isTransitioning" | "onPrevious" | "onNext">) {
+  return (
+    <nav className="details-navigation" aria-label="Переключение работ">
+      <button onClick={onPrevious} disabled={isTransitioning}><ArrowIcon direction="left" /> Предыдущая</button>
+      <button onClick={onNext} disabled={isTransitioning}>Следующая <ArrowIcon direction="right" /></button>
+    </nav>
   );
 }

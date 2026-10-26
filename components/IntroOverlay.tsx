@@ -1,20 +1,26 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef } from "react";
 import gsap from "gsap";
+import ArrowIcon from "./ArrowIcon";
 
 type IntroOverlayProps = {
   entered: boolean;
   compact?: boolean;
   onEnter: () => void;
-  onViewArtworks: () => void;
 };
 
-export default function IntroOverlay({ entered, compact = false, onEnter, onViewArtworks }: IntroOverlayProps) {
+export default function IntroOverlay({ entered, compact = false, onEnter }: IntroOverlayProps) {
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!root.current || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const element = root.current;
+    if (!element) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      element.classList.add("is-revealed");
+      return;
+    }
     const context = gsap.context(() => {
       gsap.from("[data-intro-reveal]", {
         yPercent: 115,
@@ -23,29 +29,36 @@ export default function IntroOverlay({ entered, compact = false, onEnter, onView
         stagger: 0.11,
         delay: 0.35,
         ease: "expo.out",
+        onComplete: () => element.classList.add("is-revealed"),
       });
-    }, root);
-    return () => context.revert();
+    }, element);
+    return () => {
+      context.revert();
+      element.classList.remove("is-revealed");
+    };
   }, []);
 
   return (
     <section ref={root} className={`intro-overlay ${entered ? "is-entered" : ""} ${compact ? "is-compact" : ""}`} aria-hidden={entered}>
-      <div className="intro-kicker clip-line"><span data-intro-reveal>Independent artist · Moscow</span></div>
-      <div className="intro-title" aria-label="Ekaterina Sokolova">
-        <div className="clip-line"><span data-intro-reveal>Ekaterina</span></div>
-        <div className="clip-line title-indent"><span data-intro-reveal>Sokolova</span></div>
+      <div className="intro-identity">
+        <div className="intro-kicker">
+          <div className="clip-line"><span data-intro-reveal>Современная российская художница</span></div>
+        </div>
+        <div className="intro-title display-title" aria-label="Екатерина Соколова">
+          <div className="clip-line"><span data-intro-reveal>Екатерина</span></div>
+          <div className="clip-line title-indent intro-title-accent"><span data-intro-reveal>Соколова</span></div>
+        </div>
       </div>
       <div className="intro-footer">
-        <div className="intro-subtitle clip-line"><span data-intro-reveal>Art Gallery</span></div>
+        <div className="intro-subtitle clip-line"><span data-intro-reveal>Живопись между реализмом и мистикой</span></div>
         <div className="intro-actions" data-intro-reveal>
           <button className="primary-action" onClick={onEnter} tabIndex={entered ? -1 : 0}>
-            <span>Enter the gallery</span><i aria-hidden="true">↗</i>
+            <span>Войти в галерею</span><i aria-hidden="true"><ArrowIcon /></i>
           </button>
-          <button className="text-action" onClick={onViewArtworks} tabIndex={entered ? -1 : 0}>View artworks</button>
+          <Link className="text-action" href="/works/" tabIndex={entered ? -1 : 0}>Каталог работ</Link>
         </div>
       </div>
       <div className="intro-index" data-intro-reveal aria-hidden="true">EST. — 2026</div>
-      <button className="skip-intro" onClick={onEnter} tabIndex={entered ? -1 : 0}>Skip intro</button>
     </section>
   );
 }

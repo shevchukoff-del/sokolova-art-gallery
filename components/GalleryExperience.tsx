@@ -1,22 +1,31 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import artworksJson from "@/data/artworks.json";
 import type { ArtworkData } from "@/lib/types";
+import { orderArtworksByGalleryRoute } from "@/lib/artworkOrder";
 import IntroOverlay from "./IntroOverlay";
 import ArtworkDetails from "./ArtworkDetails";
 import MobileGallery from "./MobileGallery";
+import SiteHeader from "./SiteHeader";
+import ArrowIcon from "./ArrowIcon";
 
 const artworks = artworksJson as ArtworkData[];
+const routeArtworks = orderArtworksByGalleryRoute(artworks);
 const GalleryScene = dynamic(() => import("./GalleryScene"), { ssr: false });
 
-export default function GalleryExperience() {
+export default function GalleryExperience({ onReady }: { onReady: () => void }) {
   const [entered, setEntered] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [detailsId, setDetailsId] = useState<string | null>(null);
+  const [pendingDetailsId, setPendingDetailsId] = useState<string | null>(null);
   const [isCompact, setIsCompact] = useState(() => window.matchMedia("(max-width: 760px), (pointer: coarse)").matches);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const selected = artworks.find((artwork) => artwork.id === selectedId) ?? null;
+  const detailsArtwork = artworks.find((artwork) => artwork.id === detailsId) ?? null;
+  const markSceneReady = useCallback(() => onReady(), [onReady]);
 
   useEffect(() => {
     const compact = window.matchMedia("(max-width: 760px), (pointer: coarse)");
@@ -34,67 +43,155 @@ export default function GalleryExperience() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isCompact) onReady();
+  }, [isCompact, onReady]);
+
+  const navigateArtwork = useCallback((direction: -1 | 1) => {
+    if (pendingDetailsId) return;
+    const currentId = detailsId ?? selectedId;
+    const currentIndex = routeArtworks.findIndex((artwork) => artwork.id === currentId);
+    const nextIndex = currentIndex < 0
+      ? 0
+      : (currentIndex + direction + routeArtworks.length) % routeArtworks.length;
+    const nextId = routeArtworks[nextIndex].id;
+    setSelectedId(nextId);
+    if (detailsId) {
+      if (isCompact || reducedMotion) {
+        setDetailsId(nextId);
+      } else {
+        setPendingDetailsId(nextId);
+      }
+    }
+  }, [detailsId, isCompact, pendingDetailsId, reducedMotion, selectedId]);
+
+  const handleFocusSettled = useCallback((id: string) => {
+    if (pendingDetailsId === id) {
+      setDetailsId(id);
+      setPendingDetailsId(null);
+    }
+  }, [pendingDetailsId]);
+
+  useEffect(() => {
+    if (!selectedId && !detailsId) return;
+    const handleKeys = (event: KeyboardEvent) => {
+      if (event.key === "ArrowLeft") navigateArtwork(-1);
+      if (event.key === "ArrowRight") navigateArtwork(1);
+      if (event.key === "Escape" && !detailsId) setSelectedId(null);
+    };
+    window.addEventListener("keydown", handleKeys);
+    return () => window.removeEventListener("keydown", handleKeys);
+  }, [detailsId, navigateArtwork, selectedId]);
+
   const enterGallery = () => {
     setEntered(true);
     window.requestAnimationFrame(() => window.scrollTo({ top: 180, behavior: reducedMotion ? "auto" : "smooth" }));
   };
 
-  const viewArtworks = () => {
-    setEntered(true);
-    if (isCompact) {
-      window.requestAnimationFrame(() => document.getElementById("works")?.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth" }));
-    } else {
-      setSelectedId(artworks[0].id);
+  const selectArtwork = (id: string | null) => {
+    if (!id) {
+      setSelectedId(null);
+      setDetailsId(null);
+      setPendingDetailsId(null);
+      return;
     }
+    if (id === selectedId) {
+      setDetailsId(id);
+      return;
+    }
+    setSelectedId(id);
+    setDetailsId(null);
+    setPendingDetailsId(null);
+  };
+
+  const exitGallery = () => {
+    setSelectedId(null);
+    setDetailsId(null);
+    setPendingDetailsId(null);
+    setEntered(false);
+    window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
   };
 
   if (isCompact) {
     return (
       <>
-        <IntroOverlay entered={entered} onEnter={enterGallery} onViewArtworks={viewArtworks} compact />
-        <MobileGallery artworks={artworks} onSelect={setSelectedId} />
-        <ArtworkDetails artwork={selected} onClose={() => setSelectedId(null)} />
+        <MobileGallery artworks={artworks} reducedMotion={reducedMotion} onSelect={setDetailsId} />
+        <ArtworkDetails
+          artwork={detailsArtwork}
+          isTransitioning={false}
+          position={detailsArtwork ? routeArtworks.findIndex((artwork) => artwork.id === detailsArtwork.id) + 1 : undefined}
+          total={routeArtworks.length}
+          onClose={() => setDetailsId(null)}
+          onPrevious={() => navigateArtwork(-1)}
+          onNext={() => navigateArtwork(1)}
+        />
       </>
     );
   }
 
   return (
     <main className="experience-shell">
+      <SiteHeader
+        current="gallery"
+        meta={entered ? "Листайте для движения" : undefined}
+        variant="gallery"
+        onHome={exitGallery}
+      />
       <GalleryScene
         artworks={artworks}
         entered={entered}
         selectedId={selectedId}
         reducedMotion={reducedMotion}
-        onSelect={setSelectedId}
+        onSelect={selectArtwork}
+        onFocusSettled={handleFocusSettled}
+        onReady={markSceneReady}
       />
-      <IntroOverlay entered={entered} onEnter={enterGallery} onViewArtworks={viewArtworks} />
+      <IntroOverlay entered={entered} onEnter={enterGallery} />
       <div className={`gallery-chrome ${entered ? "is-visible" : ""}`}>
-        <header className="topbar">
-          <button className="wordmark" onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
-            Sokolova Art
-          </button>
-          <span className="exhibition-label">Digital exhibition · 01</span>
-          <span className="progress-copy">Scroll to move</span>
-        </header>
-        <nav className="artwork-rail" aria-label="Artwork index">
-          {artworks.map((artwork, index) => (
+        <nav className="artwork-rail" aria-label="Список работ">
+          {routeArtworks.map((artwork, index) => (
             <button
               key={artwork.id}
               className={selectedId === artwork.id ? "is-active" : ""}
-              onClick={() => setSelectedId(artwork.id)}
-              aria-label={`View ${artwork.title}`}
+              onClick={() => selectArtwork(artwork.id)}
+              aria-label={`Открыть работу «${artwork.title}»`}
             >
               <span>{String(index + 1).padStart(2, "0")}</span>
               <i />
             </button>
           ))}
         </nav>
-        <div className="scroll-cue" aria-hidden="true">
-          <span>Explore</span>
-          <i />
-        </div>
+        <Link className="gallery-catalog-link" href="/works/">
+          <span>Каталог работ</span><i aria-hidden="true"><ArrowIcon /></i>
+        </Link>
       </div>
-      <ArtworkDetails artwork={selected} onClose={() => setSelectedId(null)} />
+      {selected && (
+        <section className={`focus-caption ${detailsArtwork ? "is-muted" : ""}`} aria-live="polite">
+          <span className="focus-index">{String(routeArtworks.findIndex((artwork) => artwork.id === selected.id) + 1).padStart(2, "0")}</span>
+          <div className="focus-title">
+            <small>Работа {routeArtworks.findIndex((artwork) => artwork.id === selected.id) + 1} из {routeArtworks.length}</small>
+            <strong>{selected.title}</strong>
+          </div>
+          <div className="focus-navigation" aria-label="Переключение работ">
+            <button onClick={() => navigateArtwork(-1)} aria-label="Предыдущая работа"><ArrowIcon direction="left" /></button>
+            <button onClick={() => navigateArtwork(1)}><span>Следующая</span><i aria-hidden="true"><ArrowIcon direction="right" /></i></button>
+          </div>
+          <button className="focus-details" onClick={() => setDetailsId(selected.id)}><span>Подробнее</span><i aria-hidden="true"><ArrowIcon /></i></button>
+          <button className="focus-close" onClick={() => selectArtwork(null)} aria-label="Вернуться к обзору галереи">×</button>
+        </section>
+      )}
+      <ArtworkDetails
+        artwork={detailsArtwork}
+        isTransitioning={Boolean(pendingDetailsId)}
+        position={detailsArtwork ? routeArtworks.findIndex((artwork) => artwork.id === detailsArtwork.id) + 1 : undefined}
+        total={routeArtworks.length}
+        onClose={() => {
+          setDetailsId(null);
+          setPendingDetailsId(null);
+        }}
+        onPrevious={() => navigateArtwork(-1)}
+        onNext={() => navigateArtwork(1)}
+      />
       <div className="scroll-track" aria-hidden="true" />
     </main>
   );

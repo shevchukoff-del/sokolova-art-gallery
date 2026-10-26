@@ -11,5 +11,20 @@ export type ArtworkData = {
   price: string | null;
   status: ArtworkStatus;
   image: string | null;
+  imageAspectRatio?: number;
   palette: [string, string, string, string];
+};
+
+export type ArtwearItem = {
+  id: string;
+  number: string;
+  title: string;
+  titleEn: string;
+  sourceUrl: string;
+  artworkImage: string;
+  modelImage: string;
+  video?: {
+    mp4?: string;
+    webm?: string;
+  };
 };

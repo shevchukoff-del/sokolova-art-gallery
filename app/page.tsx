@@ -1,18 +1,25 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useCallback, useState } from "react";
 
 const GalleryExperience = dynamic(() => import("@/components/GalleryExperience"), {
   ssr: false,
-  loading: () => (
-    <main className="loading-screen" aria-live="polite">
-      <span>Sokolova Art</span>
-      <div className="loading-rule" />
-      <small>Preparing the gallery</small>
-    </main>
-  ),
+  loading: () => null,
 });
 
 export default function Home() {
-  return <GalleryExperience />;
+  const [ready, setReady] = useState(false);
+  const handleReady = useCallback(() => setReady(true), []);
+
+  return (
+    <>
+      <main className={`loading-screen ${ready ? "is-ready" : ""}`} aria-live="polite" aria-hidden={ready}>
+        <span>Sokolova Art</span>
+        <div className="loading-rule" aria-hidden="true" />
+        <small>Готовим экспозицию</small>
+      </main>
+      <GalleryExperience onReady={handleReady} />
+    </>
+  );
 }
