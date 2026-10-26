@@ -16,6 +16,13 @@ const filters: { id: GalleryFilter; label: string }[] = [
 
 const heroSlides = [
   {
+    id: "red-fish-1-animated",
+    title: "Red fish 1",
+    video: "/hero/red-fish-1-animated.mp4",
+    poster: "/hero/red-fish-1.webp",
+    position: "50% 50%",
+  },
+  {
     id: "gostinitsa-ukraina",
     title: "Гостиница Украина",
     image: "/artworks/gostinitsa-ukraina.webp",
@@ -26,12 +33,6 @@ const heroSlides = [
     title: "Ночной клуб",
     image: "/hero/nochnoy-klub.webp",
     position: "50% 46%",
-  },
-  {
-    id: "red-fish-1",
-    title: "Red fish 1",
-    image: "/hero/red-fish-1.webp",
-    position: "50% 45%",
   },
   {
     id: "tigr",
@@ -59,6 +60,7 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
   const [activeFilter, setActiveFilter] = useState<GalleryFilter>("all");
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
+  const heroVideo = useRef<HTMLVideoElement | null>(null);
   const touchStartX = useRef<number | null>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeHeroSlide = heroSlides[activeHeroIndex] ?? heroSlides[0];
@@ -79,22 +81,39 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
     pauseHeroTemporarily();
   }, [pauseHeroTemporarily]);
 
+  const selectHero = useCallback((index: number) => {
+    setActiveHeroIndex(index);
+    pauseHeroTemporarily();
+  }, [pauseHeroTemporarily]);
+
   useEffect(() => {
     heroSlides.forEach((slide) => {
+      const source = "image" in slide ? slide.image : slide.poster;
       const image = new Image();
-      image.src = assetPath(slide.image);
+      image.src = assetPath(source);
     });
   }, []);
 
   useEffect(() => {
-    if (reducedMotion || isHeroPaused) return;
-    const interval = window.setInterval(() => {
+    const video = heroVideo.current;
+    if (!video) return;
+    if (activeHeroIndex === 0 && !reducedMotion) {
+      video.currentTime = 0;
+      void video.play().catch(() => undefined);
+      return;
+    }
+    video.pause();
+  }, [activeHeroIndex, reducedMotion]);
+
+  useEffect(() => {
+    if (reducedMotion || isHeroPaused || activeHeroIndex === 0) return;
+    const timeout = window.setTimeout(() => {
       if (!document.hidden) {
         setActiveHeroIndex((current) => (current + 1) % heroSlides.length);
       }
     }, heroIntervalMs);
-    return () => window.clearInterval(interval);
-  }, [isHeroPaused, reducedMotion]);
+    return () => window.clearTimeout(timeout);
+  }, [activeHeroIndex, isHeroPaused, reducedMotion]);
 
   useEffect(() => () => {
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
@@ -122,15 +141,32 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
           }}
         >
           {heroSlides.map((slide, index) => (
-            <img
-              className={index === activeHeroIndex ? "is-active" : ""}
-              src={assetPath(slide.image)}
-              alt={index === activeHeroIndex ? `${slide.title}, Екатерина Соколова` : ""}
-              aria-hidden={index !== activeHeroIndex}
-              loading={index === 0 ? "eager" : "lazy"}
-              style={{ objectPosition: slide.position }}
-              key={slide.id}
-            />
+            "video" in slide ? (
+              <video
+                ref={heroVideo}
+                className={index === activeHeroIndex ? "is-active" : ""}
+                src={assetPath(slide.video)}
+                poster={assetPath(slide.poster)}
+                muted
+                playsInline
+                preload="metadata"
+                aria-label={`${slide.title}, анимированная работа Екатерины Соколовой`}
+                aria-hidden={index !== activeHeroIndex}
+                onEnded={() => setActiveHeroIndex(1)}
+                style={{ objectPosition: slide.position }}
+                key={slide.id}
+              />
+            ) : (
+              <img
+                className={index === activeHeroIndex ? "is-active" : ""}
+                src={assetPath(slide.image)}
+                alt={index === activeHeroIndex ? `${slide.title}, Екатерина Соколова` : ""}
+                aria-hidden={index !== activeHeroIndex}
+                loading="lazy"
+                style={{ objectPosition: slide.position }}
+                key={slide.id}
+              />
+            )
           ))}
           <span className="mobile-artist-shade" aria-hidden="true" />
         </figure>
@@ -138,10 +174,31 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
           <p className="mobile-artist-kicker">Современная российская художница</p>
           <h1 id="mobile-artist-title" className="display-title"><span>Екатерина</span><i>Соколова</i></h1>
           <p>Живопись между реализмом и мистикой</p>
-          <a className="mobile-artist-cta" href="#works"><span>Смотреть работы</span><ArrowIcon /></a>
+          <div className="mobile-artist-actions">
+            <a className="mobile-artist-cta" href="#works"><span>Смотреть работы</span><ArrowIcon /></a>
+            <a className="mobile-artist-contact" href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
+          </div>
         </div>
         <div className="mobile-artist-meta" aria-live="polite">
           <span>{activeHeroSlide.title}</span>
+          <div className="mobile-artist-progress">
+            <div className="mobile-artist-progress-track" aria-hidden="true">
+              {heroSlides.map((slide, index) => (
+                <i className={index <= activeHeroIndex ? "is-active" : undefined} key={slide.id} />
+              ))}
+            </div>
+            <input
+              type="range"
+              min="0"
+              max={heroSlides.length - 1}
+              step="1"
+              value={activeHeroIndex}
+              aria-label="Выбрать работу на первом экране"
+              aria-valuetext={`${activeHeroSlide.title}, ${activeHeroIndex + 1} из ${heroSlides.length}`}
+              onChange={(event) => selectHero(Number(event.currentTarget.value))}
+              onPointerDown={pauseHeroTemporarily}
+            />
+          </div>
           <span>{String(activeHeroIndex + 1).padStart(2, "0")} / {String(heroSlides.length).padStart(2, "0")}</span>
         </div>
       </section>
