@@ -23,11 +23,11 @@ The deployable site is written to `out/`. Preview it with any static HTTP server
 ## Content
 
 - Artwork metadata lives in [`data/artworks.json`](./data/artworks.json).
-- Approved images should be placed in [`public/artworks/`](./public/artworks/).
-- Current artwork-file status and required filenames are documented in [`docs/artwork-assets.md`](./docs/artwork-assets.md).
+- The catalogue currently contains 12 entries, each connected to a WebP image in [`public/artworks/`](./public/artworks/).
+- Current artwork-file status and provenance notes are documented in [`docs/artwork-assets.md`](./docs/artwork-assets.md).
 - Freepik concept references can be added to [`references/freepik/`](./references/freepik/).
 
-No artwork images from the existing public site are bundled in this prototype because reuse rights have not yet been confirmed. The colour fields in the room are clearly labelled temporary image slots.
+The repository does not contain confirmation of reproduction or display rights for the artwork images. Confirm those rights with the project owner before commercial or final publication.
 
 ## Interaction model
 

@@ -7,3 +7,13 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+## Project rules
+
+- Work only with files relevant to the current task; do not audit the whole repository unless needed.
+- Do not change the approved design, unrelated pages, components, routes, or behavior without a request.
+- Preserve the existing Next.js architecture and static export. The site currently deploys to GitHub Pages and is planned to move to REG.RU.
+- Reuse existing components; do not create duplicates or install libraries without a clear need.
+- Run checks proportionate to the change and briefly report changed files and results.
+- Do not commit or push without explicit instruction.
+- Project map: [`docs/PROJECT.md`](docs/PROJECT.md). Confirmed design constraints: [`docs/DESIGN.md`](docs/DESIGN.md).
