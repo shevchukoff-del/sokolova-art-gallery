@@ -1,6 +1,6 @@
 import type { ArtworkData } from "./types";
 
-const galleryRouteIds = [
+export const galleryRouteIds = [
   "krasnaya-moskva",
   "mgu",
   "paporotnik",
@@ -14,6 +14,10 @@ const galleryRouteIds = [
   "gorod-nochyu",
   "gostinitsa-ukraina",
 ] as const;
+
+export function isGalleryRouteArtwork(artwork: ArtworkData) {
+  return galleryRouteIds.includes(artwork.id as (typeof galleryRouteIds)[number]);
+}
 
 export function orderArtworksByGalleryRoute(artworks: ArtworkData[]) {
   const byId = new Map(artworks.map((artwork) => [artwork.id, artwork]));

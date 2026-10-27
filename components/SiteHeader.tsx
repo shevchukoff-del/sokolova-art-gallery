@@ -12,10 +12,10 @@ type SiteHeaderProps = {
 };
 
 const links = [
-  { id: "gallery", href: "/", label: "Галерея" },
-  { id: "works", href: "/works/", label: "Каталог работ" },
+  { id: "gallery", href: "/", label: "Главное" },
   { id: "about", href: "/about/", label: "Об авторе" },
-  { id: "artwear", href: "/artwear/", label: "Artwear" },
+  { id: "works", href: "/works/", label: "Каталог работ" },
+  { id: "artwear", href: "/artwear/", label: "Artwear / Изделия" },
   { id: "interiors", href: "/interiors/", label: "Роспись интерьеров" },
   { id: "press", href: "/press/", label: "Выставки и публикации" },
 ] as const;

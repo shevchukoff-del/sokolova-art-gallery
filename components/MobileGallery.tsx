@@ -1,19 +1,55 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type UIEvent } from "react";
 import type { ArtworkData } from "@/lib/types";
 import { assetPath } from "@/lib/assetPath";
+import { artwearItems } from "@/data/artwear";
 import SiteHeader from "./SiteHeader";
 import ArrowIcon from "./ArrowIcon";
 
-type GalleryFilter = "all" | "available" | "archive";
+const featuredArtworkIds = ["zebra", "vera", "nice-pinky-ass", "etyud", "flamingo"] as const;
 
-const filters: { id: GalleryFilter; label: string }[] = [
-  { id: "all", label: "Все работы" },
-  { id: "available", label: "В наличии" },
-  { id: "archive", label: "Архив" },
-];
+const artwearCollections = [
+  {
+    id: "tshirts",
+    title: "Футболки",
+    items: artwearItems.map((item) => ({ title: item.title, type: "Авторский принт", image: item.modelImage, href: `/artwear/#${item.id}` })),
+  },
+  {
+    id: "scarves",
+    title: "Платки",
+    items: [
+      { title: "Средиземноморье", type: "Шёлковый платок", image: "/artwear/home/scarves/harbor-draped.jpg", href: "/artwear/#collection-title" },
+      { title: "Тигр", type: "Шёлковый платок", image: "/artwear/home/scarves/tiger.jpg", href: "/artwear/#collection-title" },
+      { title: "Москва", type: "Шёлковый платок", image: "/artwear/home/scarves/moscow-night.jpg", href: "/artwear/#collection-title" },
+      { title: "Красные рыбы", type: "Шёлковый платок", image: "/artwear/home/scarves/red-fish.jpg", href: "/artwear/#collection-title" },
+      { title: "Фламинго", type: "Шёлковый платок", image: "/artwear/home/scarves/flamingo.jpg", href: "/artwear/#collection-title" },
+    ],
+  },
+  {
+    id: "bags",
+    title: "Сумки",
+    items: [
+      { title: "Зебра", type: "Сумка-тоут", image: "/artwear/home/bags/zebra-tote.jpg", href: "/artwear/#collection-title" },
+      { title: "Девочка", type: "Сумка-тоут", image: "/artwear/home/bags/girl-tote.jpg", href: "/artwear/#collection-title" },
+      { title: "Средиземноморье", type: "Сумка-тоут", image: "/artwear/home/bags/harbor-bag.jpg", href: "/artwear/#collection-title" },
+      { title: "Тигр", type: "Авторская сумка", image: "/artwear/home/bags/tiger-bag.jpg", href: "/artwear/#collection-title" },
+      { title: "Ночная Москва", type: "Авторская сумка", image: "/artwear/home/bags/night-city-bag.jpg", href: "/artwear/#collection-title" },
+      { title: "Средиземноморье · комплект", type: "Сумка и косметичка", image: "/artwear/home/bags/harbor-set.jpg", href: "/artwear/#collection-title" },
+    ],
+  },
+  {
+    id: "wearable-art",
+    title: "Авторская роспись одежды",
+    kicker: "Wearable Art",
+    items: [
+      { title: "Цирк · вид спереди", type: "Ручная роспись", image: "/artwear/home/wearable-art/circus-front.jpg", href: "/artwear/#collection-title" },
+      { title: "Цирк · вид сзади", type: "Ручная роспись", image: "/artwear/home/wearable-art/circus-back.jpg", href: "/artwear/#collection-title" },
+      { title: "Москва · вид сзади", type: "Ручная роспись", image: "/artwear/home/wearable-art/moscow-back.jpg", href: "/artwear/#collection-title" },
+    ],
+  },
+] as const;
 
 const heroSlides = [
   {
@@ -58,20 +94,27 @@ type MobileGalleryProps = {
 };
 
 export default function MobileGallery({ artworks, reducedMotion, onSelect }: MobileGalleryProps) {
-  const [activeFilter, setActiveFilter] = useState<GalleryFilter>("all");
   const [activeHeroIndex, setActiveHeroIndex] = useState(0);
   const [isHeroPaused, setIsHeroPaused] = useState(false);
   const heroRoot = useRef<HTMLElement | null>(null);
+  const quoteRoot = useRef<HTMLElement | null>(null);
   const heroVideo = useRef<HTMLVideoElement | null>(null);
   const wasHeroVisible = useRef(false);
   const touchStartX = useRef<number | null>(null);
   const resumeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const activeHeroSlide = heroSlides[activeHeroIndex] ?? heroSlides[0];
-  const filteredArtworks = artworks.filter((artwork) => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "available") return artwork.status === "available";
-    return artwork.status === "sold";
+  const featuredArtworks = featuredArtworkIds.flatMap((id) => {
+    const artwork = artworks.find((item) => item.id === id);
+    return artwork ? [artwork] : [];
   });
+
+  const updateArtwearProgress = useCallback((event: UIEvent<HTMLDivElement>) => {
+    const rail = event.currentTarget;
+    const distance = rail.scrollWidth - rail.clientWidth;
+    const progress = distance > 0 ? rail.scrollLeft / distance : 0;
+    const indicator = rail.nextElementSibling?.querySelector<HTMLElement>("i");
+    if (indicator) indicator.style.transform = `translate3d(${(progress * 257).toFixed(2)}%, 0, 0)`;
+  }, []);
 
   const pauseHeroTemporarily = useCallback(() => {
     setIsHeroPaused(true);
@@ -148,6 +191,54 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
     if (resumeTimer.current) clearTimeout(resumeTimer.current);
   }, []);
 
+  useEffect(() => {
+    const root = quoteRoot.current;
+    if (!root) return;
+    const lead = root.querySelector<HTMLElement>("blockquote span");
+    const accent = root.querySelector<HTMLElement>("blockquote i");
+    const cite = root.querySelector<HTMLElement>("cite");
+    if (!lead || !accent || !cite) return;
+
+    const applyProgress = (progress: number, citeProgress: number) => {
+      const shift = ((1 - progress) * 56).toFixed(2);
+      const opacity = (0.1 + progress * 0.9).toFixed(3);
+      lead.style.transform = `translate3d(-${shift}px, 0, 0)`;
+      accent.style.transform = `translate3d(${shift}px, 0, 0)`;
+      lead.style.opacity = opacity;
+      accent.style.opacity = opacity;
+      cite.style.transform = `translate3d(0, ${((1 - citeProgress) * 10).toFixed(2)}px, 0)`;
+      cite.style.opacity = citeProgress.toFixed(3);
+    };
+
+    if (reducedMotion) {
+      applyProgress(1, 1);
+      return;
+    }
+
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const viewportHeight = window.innerHeight;
+      const top = root.getBoundingClientRect().top;
+      const start = viewportHeight * 0.92;
+      const end = viewportHeight * 0.34;
+      const progress = Math.min(1, Math.max(0, (start - top) / (start - end)));
+      const citeProgress = Math.min(1, Math.max(0, (progress - 0.58) / 0.3));
+      applyProgress(progress, citeProgress);
+    };
+    const requestUpdate = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    update();
+    window.addEventListener("scroll", requestUpdate, { passive: true });
+    window.addEventListener("resize", requestUpdate);
+    return () => {
+      if (frame) window.cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", requestUpdate);
+      window.removeEventListener("resize", requestUpdate);
+    };
+  }, [reducedMotion]);
+
   return (
     <main id="top" className="mobile-gallery">
       <SiteHeader current="gallery" variant="gallery" />
@@ -200,7 +291,7 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
           <span className="mobile-artist-shade" aria-hidden="true" />
         </figure>
         <div className="mobile-artist-identity">
-          <p className="mobile-artist-kicker">Современная российская художница</p>
+          <p className="mobile-artist-kicker">Современный российский художник</p>
           <h1 id="mobile-artist-title" className="display-title"><span>Екатерина</span><i>Соколова</i></h1>
           <p>Живопись между реализмом и мистикой</p>
           <div className="mobile-artist-actions">
@@ -229,35 +320,25 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
           </div>
         </div>
       </section>
-      <section id="works" className="mobile-gallery-interlude" aria-labelledby="mobile-gallery-quote">
+      <section ref={quoteRoot} id="works" className="mobile-gallery-interlude" aria-labelledby="mobile-gallery-quote">
         <blockquote id="mobile-gallery-quote">
-          <span>«Работа для меня — это один из способов</span>
-          <i>общения с миром, размышление о жизни».</i>
+          <span>«Работа для меня — один из способов</span>
+          <i>общения с миром, размышления о нём».</i>
         </blockquote>
-        <cite>Екатерина Соколова</cite>
+        <cite>— Екатерина Соколова</cite>
       </section>
-      <section className="mobile-works" aria-label="Каталог работ">
-        <header className="mobile-section-title"><h2><span>Каталог</span> <i>работ</i></h2></header>
-        <div className="mobile-filters" role="group" aria-label="Фильтр работ">
-          {filters.map((filter) => (
-            <button
-              className={activeFilter === filter.id ? "is-active" : undefined}
-              type="button"
-              aria-pressed={activeFilter === filter.id}
-              onClick={() => setActiveFilter(filter.id)}
-              key={filter.id}
-            >
-              {filter.label}
-            </button>
-          ))}
-        </div>
-        <div className="mobile-work-list" aria-live="polite">
-        {filteredArtworks.map((artwork, index) => (
+      <section className="mobile-works" aria-labelledby="mobile-featured-title">
+        <header className="mobile-section-title">
+          <p>Живопись · выбор автора</p>
+          <h2 id="mobile-featured-title"><span>Избранные</span> <i>работы</i></h2>
+        </header>
+        <div className="mobile-work-list">
+        {featuredArtworks.map((artwork, index) => (
           <article className="mobile-work" key={artwork.id}>
             <button
               className="mobile-placeholder"
               style={artwork.image ? undefined : {
-                aspectRatio: `${artwork.widthCm} / ${artwork.heightCm}`,
+                aspectRatio: `${artwork.widthCm ?? 1} / ${artwork.heightCm ?? 1}`,
                 background: `linear-gradient(145deg, ${artwork.palette.join(", ")})`,
               }}
               onClick={() => onSelect(artwork.id)}
@@ -267,8 +348,8 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
               {!artwork.image && <span>Изображение · {String(index + 1).padStart(2, "0")}</span>}
             </button>
             <div className="mobile-work-caption">
-              <span><b>{artwork.title}</b><small>{artwork.medium}</small><em>{artwork.status === "available" ? "В наличии" : "Архив"}</em></span>
-              <span>{artwork.widthCm} × {artwork.heightCm} см</span>
+              <span><b>{artwork.title}</b><small>{artwork.medium}</small></span>
+              {artwork.widthCm && artwork.heightCm && <span>{artwork.widthCm} × {artwork.heightCm} см</span>}
             </div>
             <button className="mobile-work-open" type="button" onClick={() => onSelect(artwork.id)}>
               <span>Узнать о работе</span><ArrowIcon />
@@ -276,14 +357,103 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
           </article>
         ))}
         </div>
+        <Link className="mobile-section-link" href="/works/"><span>Смотреть весь каталог</span><ArrowIcon /></Link>
+      </section>
+
+      <section id="artwear" className="mobile-home-section mobile-artwear-preview" aria-labelledby="mobile-artwear-title">
+        <header className="mobile-home-heading">
+          <p>Artwear / Изделия</p>
+          <h2 id="mobile-artwear-title">Живопись, которую <i>можно носить</i></h2>
+          <span>Одежда, платки, сумки и небольшие серии предметов по мотивам оригинальных работ.</span>
+        </header>
+        <div className="mobile-artwear-collections">
+          {artwearCollections.map((collection) => (
+            <section className="mobile-artwear-collection" aria-labelledby={`artwear-${collection.id}`} key={collection.id}>
+              <div className="mobile-artwear-collection-heading">
+                <div>
+                  {"kicker" in collection && <small>{collection.kicker}</small>}
+                  <h3 id={`artwear-${collection.id}`}>{collection.title}</h3>
+                </div>
+                <Link href="/artwear/#collection-title">Смотреть все <ArrowIcon /></Link>
+              </div>
+              <div className="mobile-artwear-rail" tabIndex={0} aria-label={`${collection.title}: листайте горизонтально`} onScroll={updateArtwearProgress}>
+                {collection.items.map((item) => (
+                  <figure key={item.image}>
+                    <Link href={item.href} aria-label={`${item.title} — перейти к изделию`}>
+                      <div className="mobile-artwear-image">
+                        <img src={assetPath(item.image)} alt={`${collection.title} Sokolova Art — ${item.title}`} loading="lazy" />
+                      </div>
+                      <figcaption><b>{item.title}</b><small>{item.type}</small></figcaption>
+                    </Link>
+                  </figure>
+                ))}
+              </div>
+              <div className="mobile-artwear-progress" aria-hidden="true"><i /></div>
+            </section>
+          ))}
+        </div>
+        <Link className="mobile-section-link" href="/artwear/"><span>Смотреть Artwear / Изделия</span><ArrowIcon /></Link>
+      </section>
+
+      <section className="mobile-home-section mobile-interiors-preview" aria-labelledby="mobile-interiors-title">
+        <figure>
+          <img src={assetPath("/interiors/relief-artist-seated.jpg")} alt="Екатерина Соколова рядом с авторской росписью интерьера" loading="lazy" />
+        </figure>
+        <div>
+          <p>Интерьерные проекты</p>
+          <h2 id="mobile-interiors-title">Пространство <i>как холст</i></h2>
+          <span>Авторская роспись стен и архитектурных поверхностей — от индивидуального эскиза до реализации на объекте.</span>
+          <div className="mobile-interiors-actions">
+            <Link href="/interiors/"><span>Смотреть проекты</span><ArrowIcon /></Link>
+            <a href="mailto:katja.sokolova@gmail.com?subject=%D0%98%D0%BD%D1%82%D0%B5%D1%80%D1%8C%D0%B5%D1%80%D0%BD%D1%8B%D0%B9%20%D0%BF%D1%80%D0%BE%D0%B5%D0%BA%D1%82">Обсудить проект</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="about-preview" className="mobile-home-section mobile-about-preview" aria-labelledby="mobile-about-title">
+        <header className="mobile-about-copy">
+          <p>Об авторе</p>
+          <h2 id="mobile-about-title"><span>Между реальностью</span><i>и внутренним образом</i></h2>
+        </header>
+        <figure>
+          <img src={assetPath("/press/artist-portrait-restored.jpg")} alt="Портрет художницы Екатерины Соколовой" loading="lazy" />
+          <figcaption>Екатерина Соколова · Москва</figcaption>
+        </figure>
+        <div className="mobile-about-note">
+          <p>Екатерина Соколова — современный российский художник. В её живописи город, природа и повседневные наблюдения превращаются в эмоциональные, почти мифологические образы.</p>
+          <Link className="mobile-section-link" href="/about/"><span>Познакомиться с автором</span><ArrowIcon /></Link>
+        </div>
+      </section>
+
+      <section className="mobile-home-section mobile-press-preview" aria-labelledby="mobile-press-title">
+        <header className="mobile-home-heading">
+          <p>Публичная история</p>
+          <h2 id="mobile-press-title">Выставки <i>и публикации</i></h2>
+        </header>
+        <article className="mobile-press-feature">
+          <img src={assetPath("/press/green-fish.jpg")} alt="Картина Екатерины Соколовой «Зелёные рыбки»" loading="lazy" />
+          <div><small>2008 · Аукцион «Совком»</small><h3>Картина, ставшая частью публичной истории художницы</h3><p>«Зелёные рыбки» вошли в аукционный каталог современного искусства вместе с другой работой Екатерины Соколовой.</p></div>
+        </article>
+        <article className="mobile-press-note">
+          <small>2014 · The Art Newspaper Russia</small>
+          <h3>О карьере, выставках и аукционной истории Екатерины Соколовой</h3>
+        </article>
+        <Link className="mobile-section-link" href="/press/"><span>Все выставки и публикации</span><ArrowIcon /></Link>
+      </section>
+
+      <section className="mobile-home-contact" aria-labelledby="mobile-contact-title">
+        <p>Sokolova Art · Москва</p>
+        <h2 id="mobile-contact-title">Искусство может стать частью <i>вашей коллекции, вещи или пространства.</i></h2>
+        <span>Приобрести картину, заказать изделие или обсудить интерьерный проект.</span>
+        <a href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
       </section>
       <footer className="mobile-footer">
         <a className="mobile-footer-brand" href="#top" aria-label="В начало страницы"><span>Sokolova</span><i>Art</i></a>
         <nav aria-label="Навигация в подвале">
-          <Link href="/">Галерея</Link>
-          <Link href="/works/">Каталог работ</Link>
+          <Link href="/">Главное</Link>
           <Link href="/about/">Об авторе</Link>
-          <Link href="/artwear/">Artwear</Link>
+          <Link href="/works/">Каталог работ</Link>
+          <Link href="/artwear/">Artwear / Изделия</Link>
           <Link href="/interiors/">Роспись интерьеров</Link>
           <Link href="/press/">Выставки и публикации</Link>
         </nav>

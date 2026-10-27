@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     title: pageTitle,
     description: pageDescription,
     siteName: "Sokolova Art",
-    images: [{ url: "https://sokolova-art.com/press/artist-portrait.jpg", alt: "Художница Екатерина Соколова" }],
+    images: [{ url: "https://sokolova-art.com/press/artist-portrait-restored.jpg", alt: "Художница Екатерина Соколова" }],
   },
 };
 
@@ -34,7 +34,7 @@ const structuredData = {
   birthPlace: { "@type": "Place", name: "Москва" },
   homeLocation: { "@type": "Place", name: "Москва" },
   url: canonicalUrl,
-  image: "https://sokolova-art.com/press/artist-portrait.jpg",
+  image: "https://sokolova-art.com/press/artist-portrait-restored.jpg",
   sameAs: biographySources.map((source) => source.url),
   alumniOf: [
     { "@type": "EducationalOrganization", name: "Московское государственное академическое художественное училище памяти 1905 года" },
@@ -87,12 +87,12 @@ export default function AboutPage() {
 
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero-identity">
-          <p className="about-hero-kicker">Современная российская художница</p>
+          <p className="about-hero-kicker">Современный российский художник</p>
           <h1 className="display-title" id="about-title"><span>Екатерина</span><i>Соколова</i></h1>
         </div>
         <div className="about-hero-portrait">
           <Image
-            src={assetPath("/press/artist-portrait.jpg")}
+            src={assetPath("/press/artist-portrait-restored.jpg")}
             alt="Портрет художницы Екатерины Соколовой"
             fill
             priority

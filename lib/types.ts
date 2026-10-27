@@ -5,8 +5,8 @@ export type ArtworkData = {
   title: string;
   titleEn: string;
   year: string | null;
-  widthCm: number;
-  heightCm: number;
+  widthCm: number | null;
+  heightCm: number | null;
   medium: string;
   price: string | null;
   status: ArtworkStatus;

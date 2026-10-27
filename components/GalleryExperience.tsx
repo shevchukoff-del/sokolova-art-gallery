@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import artworksJson from "@/data/artworks.json";
 import type { ArtworkData } from "@/lib/types";
-import { orderArtworksByGalleryRoute } from "@/lib/artworkOrder";
+import { isGalleryRouteArtwork, orderArtworksByGalleryRoute } from "@/lib/artworkOrder";
 import IntroOverlay from "./IntroOverlay";
 import ArtworkDetails from "./ArtworkDetails";
 import MobileGallery from "./MobileGallery";
@@ -13,7 +13,8 @@ import SiteHeader from "./SiteHeader";
 import ArrowIcon from "./ArrowIcon";
 
 const artworks = artworksJson as ArtworkData[];
-const routeArtworks = orderArtworksByGalleryRoute(artworks);
+const orderedArtworks = orderArtworksByGalleryRoute(artworks);
+const routeArtworks = orderedArtworks.filter(isGalleryRouteArtwork);
 const GalleryScene = dynamic(() => import("./GalleryScene"), { ssr: false });
 
 export default function GalleryExperience({ onReady }: { onReady: () => void }) {
@@ -21,6 +22,7 @@ export default function GalleryExperience({ onReady }: { onReady: () => void }) 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailsId, setDetailsId] = useState<string | null>(null);
   const [pendingDetailsId, setPendingDetailsId] = useState<string | null>(null);
+  const [mobileNavigationDirection, setMobileNavigationDirection] = useState<-1 | 0 | 1>(0);
   const [isCompact, setIsCompact] = useState(() => window.matchMedia("(max-width: 760px), (pointer: coarse)").matches);
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
   const selected = artworks.find((artwork) => artwork.id === selectedId) ?? null;
@@ -49,12 +51,14 @@ export default function GalleryExperience({ onReady }: { onReady: () => void }) 
 
   const navigateArtwork = useCallback((direction: -1 | 1) => {
     if (pendingDetailsId) return;
+    if (isCompact) setMobileNavigationDirection(direction);
     const currentId = detailsId ?? selectedId;
-    const currentIndex = routeArtworks.findIndex((artwork) => artwork.id === currentId);
+    const navigationArtworks = isCompact ? orderedArtworks : routeArtworks;
+    const currentIndex = navigationArtworks.findIndex((artwork) => artwork.id === currentId);
     const nextIndex = currentIndex < 0
       ? 0
-      : (currentIndex + direction + routeArtworks.length) % routeArtworks.length;
-    const nextId = routeArtworks[nextIndex].id;
+      : (currentIndex + direction + navigationArtworks.length) % navigationArtworks.length;
+    const nextId = navigationArtworks[nextIndex].id;
     setSelectedId(nextId);
     if (detailsId) {
       if (isCompact || reducedMotion) {
@@ -115,12 +119,20 @@ export default function GalleryExperience({ onReady }: { onReady: () => void }) 
   if (isCompact) {
     return (
       <>
-        <MobileGallery artworks={artworks} reducedMotion={reducedMotion} onSelect={setDetailsId} />
+        <MobileGallery
+          artworks={artworks}
+          reducedMotion={reducedMotion}
+          onSelect={(id) => {
+            setMobileNavigationDirection(0);
+            setDetailsId(id);
+          }}
+        />
         <ArtworkDetails
           artwork={detailsArtwork}
           isTransitioning={false}
-          position={detailsArtwork ? routeArtworks.findIndex((artwork) => artwork.id === detailsArtwork.id) + 1 : undefined}
-          total={routeArtworks.length}
+          navigationDirection={mobileNavigationDirection}
+          position={detailsArtwork ? orderedArtworks.findIndex((artwork) => artwork.id === detailsArtwork.id) + 1 : undefined}
+          total={orderedArtworks.length}
           onClose={() => setDetailsId(null)}
           onPrevious={() => navigateArtwork(-1)}
           onNext={() => navigateArtwork(1)}

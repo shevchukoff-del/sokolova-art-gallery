@@ -263,10 +263,12 @@ function Artwork({ artwork, placement, selected, onSelect }: { artwork: ArtworkD
   const [hovered, setHovered] = useState(false);
   const texture = useMemo(() => makePlaceholderTexture(artwork), [artwork]);
   const group = useRef<THREE.Group>(null);
-  const maxDimension = Math.max(artwork.widthCm, artwork.heightCm);
+  const widthCm = artwork.widthCm ?? 1;
+  const heightCm = artwork.heightCm ?? 1;
+  const maxDimension = Math.max(widthCm, heightCm);
   const scale = (maxDimension > 135 ? 0.0175 : 0.0185) * (placement.displayScale ?? 1);
   const longestSide = maxDimension * scale;
-  const aspectRatio = artwork.imageAspectRatio ?? artwork.widthCm / artwork.heightCm;
+  const aspectRatio = artwork.imageAspectRatio ?? widthCm / heightCm;
   const width = aspectRatio >= 1 ? longestSide : longestSide * aspectRatio;
   const height = aspectRatio >= 1 ? longestSide / aspectRatio : longestSide;
   const frameColor = placement.frame === "oak" ? "#8f7556" : placement.frame === "white" ? "#e8e3da" : "#34322d";

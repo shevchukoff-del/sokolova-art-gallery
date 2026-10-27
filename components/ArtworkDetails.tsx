@@ -10,12 +10,13 @@ type ArtworkDetailsProps = {
   isTransitioning: boolean;
   position?: number;
   total?: number;
+  navigationDirection?: -1 | 0 | 1;
   onClose: () => void;
   onPrevious: () => void;
   onNext: () => void;
 };
 
-export default function ArtworkDetails({ artwork, isTransitioning, position, total, onClose, onPrevious, onNext }: ArtworkDetailsProps) {
+export default function ArtworkDetails({ artwork, isTransitioning, position, total, navigationDirection = 0, onClose, onPrevious, onNext }: ArtworkDetailsProps) {
   const isOpen = Boolean(artwork);
   const touchStart = useRef<{ x: number; time: number } | null>(null);
 
@@ -67,7 +68,7 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
             <DetailsNavigation isTransitioning={isTransitioning} onPrevious={onPrevious} onNext={onNext} />
           </div>
 
-          <div className="details-mobile-viewer">
+          <div className={`details-mobile-viewer ${navigationDirection === 1 ? "is-next" : navigationDirection === -1 ? "is-previous" : ""}`}>
             <header className="details-viewer-header">
               <button type="button" onClick={onClose} aria-label="Закрыть просмотр работы">×</button>
             </header>
@@ -121,7 +122,7 @@ function MobileArtworkSummary({ artwork }: { artwork: ArtworkData }) {
     <div className="details-mobile-summary">
       <p>
         <span>{artwork.medium}</span>
-        <span>{artwork.widthCm} × {artwork.heightCm} см</span>
+        {artwork.widthCm && artwork.heightCm && <span>{artwork.widthCm} × {artwork.heightCm} см</span>}
         {artwork.year && <span>{artwork.year}</span>}
       </p>
       <p>
@@ -136,7 +137,7 @@ function ArtworkFacts({ artwork }: { artwork: ArtworkData }) {
   return (
     <dl>
       {artwork.year && <><dt>Год</dt><dd>{artwork.year}</dd></>}
-      <dt>Размер</dt><dd>{artwork.widthCm} × {artwork.heightCm} см</dd>
+      <dt>Размер</dt><dd>{artwork.widthCm && artwork.heightCm ? `${artwork.widthCm} × ${artwork.heightCm} см` : "Уточняется"}</dd>
       <dt>Материал</dt><dd>{artwork.medium}</dd>
       <dt>Статус</dt><dd>{artwork.status === "available" ? "Доступна" : "В частной коллекции"}</dd>
       {artwork.status === "available" && <><dt>Цена</dt><dd>{artwork.price ?? "По запросу"}</dd></>}

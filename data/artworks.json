@@ -166,5 +166,61 @@
     "image": "/artworks/zelenaya-zhemchuzhina.webp",
     "imageAspectRatio": 0.984,
     "palette": ["#accbb3", "#b58c9d", "#e8e8dd", "#587c72"]
+  },
+  {
+    "id": "zebra",
+    "title": "Зебра",
+    "titleEn": "Zebra",
+    "year": null,
+    "widthCm": 150,
+    "heightCm": 100,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/zebra.jpg",
+    "imageAspectRatio": 0.595,
+    "palette": ["#252c2d", "#d8c5aa", "#a44738", "#ece8df"]
+  },
+  {
+    "id": "vera",
+    "title": "Вера",
+    "titleEn": "Vera",
+    "year": null,
+    "widthCm": 115,
+    "heightCm": 100,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/vera.jpg",
+    "imageAspectRatio": 0.713,
+    "palette": ["#8b6555", "#d3b5a2", "#55666a", "#ede2d6"]
+  },
+  {
+    "id": "nice-pinky-ass",
+    "title": "Nice pinky ass",
+    "titleEn": "Nice Pinky Ass",
+    "year": null,
+    "widthCm": null,
+    "heightCm": null,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/nice-pinky-ass.jpg",
+    "imageAspectRatio": 0.707,
+    "palette": ["#cf8e91", "#ead0c4", "#7b4d50", "#f2e5dc"]
+  },
+  {
+    "id": "etyud",
+    "title": "Этюд",
+    "titleEn": "Study",
+    "year": null,
+    "widthCm": 50,
+    "heightCm": 60,
+    "medium": "Холст, масло",
+    "price": null,
+    "status": "sold",
+    "image": "/artworks/etyud.jpg",
+    "imageAspectRatio": 0.924,
+    "palette": ["#8b5344", "#d4b18e", "#42595c", "#eee1cf"]
   }
 ]

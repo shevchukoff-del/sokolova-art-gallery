@@ -47,7 +47,7 @@ export default function ArtwearCard({ item, onOpen }: Props) {
   }, [hasVideo]);
 
   return (
-    <article ref={root} className="artwear-card">
+    <article ref={root} className="artwear-card" id={item.id}>
       <button className="artwear-card-open" onClick={() => onOpen(item)} aria-label={`Открыть ${item.title}`}>
         <span className="artwear-media">
           {hasVideo ? (

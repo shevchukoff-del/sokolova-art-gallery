@@ -15,7 +15,7 @@ The strongest artist portfolios from New York and France establish authorship fi
 
 ## Key Decisions
 
-- Hero hierarchy: “Современная российская художница” → “Екатерина Соколова” → real artwork → “Москва · Урбанизм · Цветы”.
+- Hero hierarchy: “Современный российский художник” → “Екатерина Соколова” → real artwork → “Москва · Урбанизм · Цветы”.
 - One compact CTA scrolls directly to the works list.
 - The visible word “Меню” is removed; the two-line burger remains accessible through its ARIA label.
 - Unicode arrow characters are replaced site-wide with a consistent inline SVG mark so mobile devices never render them as emoji.

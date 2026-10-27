@@ -83,7 +83,7 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
                 </figure>
                 <div className="works-card-copy">
                   <h3>{artwork.title}</h3>
-                  <p>{artwork.year ? `${artwork.year} · ` : ""}{artwork.widthCm} × {artwork.heightCm} см</p>
+                  <p>{artwork.year ? `${artwork.year} · ` : ""}{artwork.widthCm && artwork.heightCm ? `${artwork.widthCm} × ${artwork.heightCm} см` : "Размер уточняется"}</p>
                 </div>
               </button>
             </article>

@@ -42,7 +42,7 @@ export default function IntroOverlay({ entered, compact = false, onEnter }: Intr
     <section ref={root} className={`intro-overlay ${entered ? "is-entered" : ""} ${compact ? "is-compact" : ""}`} aria-hidden={entered}>
       <div className="intro-identity">
         <div className="intro-kicker">
-          <div className="clip-line"><span data-intro-reveal>Современная российская художница</span></div>
+          <div className="clip-line"><span data-intro-reveal>Современный российский художник</span></div>
         </div>
         <div className="intro-title display-title" aria-label="Екатерина Соколова">
           <div className="clip-line"><span data-intro-reveal>Екатерина</span></div>
