@@ -7,6 +7,7 @@ import { assetPath } from "@/lib/assetPath";
 import { artwearItems } from "@/data/artwear";
 import SiteHeader from "./SiteHeader";
 import ArrowIcon from "./ArrowIcon";
+import MobileFooter from "./MobileFooter";
 
 const featuredArtworkIds = ["zebra", "vera", "nice-pinky-ass", "etyud", "flamingo"] as const;
 
@@ -322,14 +323,13 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
       </section>
       <section ref={quoteRoot} id="works" className="mobile-gallery-interlude" aria-labelledby="mobile-gallery-quote">
         <blockquote id="mobile-gallery-quote">
-          <span>«Работа для меня — один из способов</span>
-          <i>общения с миром, размышления о нём».</i>
+          <span>Работа для меня — один из способов</span>
+          <i>общения с миром, размышления о нём.</i>
         </blockquote>
         <cite>— Екатерина Соколова</cite>
       </section>
       <section className="mobile-works" aria-labelledby="mobile-featured-title">
         <header className="mobile-section-title">
-          <p>Живопись · выбор автора</p>
           <h2 id="mobile-featured-title"><span>Избранные</span> <i>работы</i></h2>
         </header>
         <div className="mobile-work-list">
@@ -363,8 +363,8 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
       <section id="artwear" className="mobile-home-section mobile-artwear-preview" aria-labelledby="mobile-artwear-title">
         <header className="mobile-home-heading">
           <p>Artwear / Изделия</p>
-          <h2 id="mobile-artwear-title">Живопись, которую <i>можно носить</i></h2>
-          <span>Одежда, платки, сумки и небольшие серии предметов по мотивам оригинальных работ.</span>
+          <h2 id="mobile-artwear-title">Картины <i>вне холста</i></h2>
+          <span>Одежда, платки и сумки, созданные по мотивам работ Екатерины Соколовой.</span>
         </header>
         <div className="mobile-artwear-collections">
           {artwearCollections.map((collection) => (
@@ -447,26 +447,7 @@ export default function MobileGallery({ artworks, reducedMotion, onSelect }: Mob
         <span>Приобрести картину, заказать изделие или обсудить интерьерный проект.</span>
         <a href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
       </section>
-      <footer className="mobile-footer">
-        <a className="mobile-footer-brand" href="#top" aria-label="В начало страницы"><span>Sokolova</span><i>Art</i></a>
-        <nav aria-label="Навигация в подвале">
-          <Link href="/">Главное</Link>
-          <Link href="/about/">Об авторе</Link>
-          <Link href="/works/">Каталог работ</Link>
-          <Link href="/artwear/">Artwear / Изделия</Link>
-          <Link href="/interiors/">Роспись интерьеров</Link>
-          <Link href="/press/">Выставки и публикации</Link>
-        </nav>
-        <a className="mobile-footer-contact" href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
-        <div className="mobile-footer-bottom">
-          <div>
-            <Link href="/privacy/">Политика конфиденциальности</Link>
-            <Link href="/consent/">Согласие на обработку данных</Link>
-            <span>© 2026</span>
-          </div>
-          <a className="mobile-footer-top" href="#top"><span>Наверх</span><ArrowIcon /></a>
-        </div>
-      </footer>
+      <MobileFooter />
     </main>
   );
 }

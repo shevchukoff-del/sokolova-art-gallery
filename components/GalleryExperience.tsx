@@ -11,6 +11,7 @@ import ArtworkDetails from "./ArtworkDetails";
 import MobileGallery from "./MobileGallery";
 import SiteHeader from "./SiteHeader";
 import ArrowIcon from "./ArrowIcon";
+import CloseIcon from "./CloseIcon";
 
 const artworks = artworksJson as ArtworkData[];
 const orderedArtworks = orderArtworksByGalleryRoute(artworks);
@@ -189,7 +190,7 @@ export default function GalleryExperience({ onReady }: { onReady: () => void }) 
             <button onClick={() => navigateArtwork(1)}><span>Следующая</span><i aria-hidden="true"><ArrowIcon direction="right" /></i></button>
           </div>
           <button className="focus-details" onClick={() => setDetailsId(selected.id)}><span>Подробнее</span><i aria-hidden="true"><ArrowIcon /></i></button>
-          <button className="focus-close" onClick={() => selectArtwork(null)} aria-label="Вернуться к обзору галереи">×</button>
+          <button className="focus-close" onClick={() => selectArtwork(null)} aria-label="Вернуться к обзору галереи"><CloseIcon /></button>
         </section>
       )}
       <ArtworkDetails

@@ -23,8 +23,28 @@ export type ArtwearItem = {
   sourceUrl: string;
   artworkImage: string;
   modelImage: string;
+  sizes?: string[];
   video?: {
     mp4?: string;
     webm?: string;
   };
+};
+
+export type ArtwearCategory = "tshirts" | "scarves" | "bags" | "wearable-art";
+
+export type ArtwearCatalogItem = {
+  id: string;
+  title: string;
+  category: ArtwearCategory;
+  categoryLabel: string;
+  status: "available" | "inquiry" | "custom";
+  statusLabel: string;
+  image: string;
+  description: string;
+  actionLabel: string;
+  actionUrl: string;
+  sizes?: string[];
+  artworkImage?: string;
+  sourceUrl?: string;
+  featured?: boolean;
 };

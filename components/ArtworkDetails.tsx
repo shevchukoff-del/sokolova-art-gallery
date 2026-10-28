@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { ArtworkData } from "@/lib/types";
 import { assetPath } from "@/lib/assetPath";
 import ArrowIcon from "./ArrowIcon";
+import CloseIcon from "./CloseIcon";
 
 type ArtworkDetailsProps = {
   artwork: ArtworkData | null;
@@ -19,6 +20,12 @@ type ArtworkDetailsProps = {
 export default function ArtworkDetails({ artwork, isTransitioning, position, total, navigationDirection = 0, onClose, onPrevious, onNext }: ArtworkDetailsProps) {
   const isOpen = Boolean(artwork);
   const touchStart = useRef<{ x: number; time: number } | null>(null);
+  const mobileViewer = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!artwork) return;
+    mobileViewer.current?.scrollTo({ top: 0 });
+  }, [artwork?.id]);
 
   useEffect(() => {
     if (!artwork) return;
@@ -56,10 +63,9 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
       {artwork && (
         <>
           <div className="details-desktop">
-            <button className="details-close" onClick={onClose} aria-label="Закрыть информацию о работе">×</button>
+            <button className="details-close" onClick={onClose} aria-label="Закрыть информацию о работе"><CloseIcon /></button>
             <div className="details-number">О работе</div>
             <div className="details-heading">
-              <p className="details-eyebrow">Екатерина Соколова</p>
               <h2>{artwork.title}</h2>
             </div>
             <ArtworkFacts artwork={artwork} />
@@ -68,9 +74,9 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
             <DetailsNavigation isTransitioning={isTransitioning} onPrevious={onPrevious} onNext={onNext} />
           </div>
 
-          <div className={`details-mobile-viewer ${navigationDirection === 1 ? "is-next" : navigationDirection === -1 ? "is-previous" : ""}`}>
+          <div ref={mobileViewer} className={`details-mobile-viewer ${navigationDirection === 1 ? "is-next" : navigationDirection === -1 ? "is-previous" : ""}`}>
             <header className="details-viewer-header">
-              <button type="button" onClick={onClose} aria-label="Закрыть просмотр работы">×</button>
+              <button type="button" onClick={onClose} aria-label="Закрыть просмотр работы"><CloseIcon /></button>
             </header>
             <figure
               className="details-mobile-artwork"
@@ -103,7 +109,6 @@ export default function ArtworkDetails({ artwork, isTransitioning, position, tot
             </div>
             <section className="details-mobile-content" aria-label={`Информация о работе «${artwork.title}»`} key={`content-${artwork.id}`}>
               <div className="details-viewer-title">
-                <p>Екатерина Соколова</p>
                 <h2>{artwork.title}</h2>
               </div>
               <MobileArtworkSummary artwork={artwork} />

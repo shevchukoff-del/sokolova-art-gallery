@@ -58,12 +58,13 @@ export default function ArtwearCard({ item, onOpen }: Props) {
           ) : (
             <img src={assetPath(item.modelImage)} alt="" loading="lazy" decoding="async" />
           )}
-          <span className="artwear-card-index">{item.number}</span>
-          <span className="artwear-view-label">Смотреть <i aria-hidden="true"><ArrowIcon /></i></span>
         </span>
         <span className="artwear-caption">
-          <span><b>{item.title}</b><small>Авторский принт</small></span>
-          <span><small>SOKOLOVA ARTWEAR</small><i aria-hidden="true"><ArrowIcon /></i></span>
+          <span>
+            <b>{item.title}</b>
+            <small>Доступно к заказу</small>
+            <span className="artwear-card-action">Заказать изделие <ArrowIcon /></span>
+          </span>
         </span>
       </button>
     </article>

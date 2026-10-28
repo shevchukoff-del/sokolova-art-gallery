@@ -15,5 +15,6 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - Preserve the existing Next.js architecture and static export. The site currently deploys to GitHub Pages and is planned to move to REG.RU.
 - Reuse existing components; do not create duplicates or install libraries without a clear need.
 - Run checks proportionate to the change and briefly report changed files and results.
+- After every visual or interface change, immediately open and show the updated result locally in the Codex browser. Do not wait for a separate preview request.
 - Do not commit or push without explicit instruction.
 - Project map: [`docs/PROJECT.md`](docs/PROJECT.md). Confirmed design constraints: [`docs/DESIGN.md`](docs/DESIGN.md).

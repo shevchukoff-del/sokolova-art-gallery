@@ -8,6 +8,7 @@ import { orderArtworksByGalleryRoute } from "@/lib/artworkOrder";
 import ArtworkDetails from "./ArtworkDetails";
 import SiteHeader from "./SiteHeader";
 import ArrowIcon from "./ArrowIcon";
+import MobileFooter from "./MobileFooter";
 
 type CatalogFilter = "all" | ArtworkStatus;
 
@@ -21,6 +22,7 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
   const orderedArtworks = useMemo(() => orderArtworksByGalleryRoute(artworks), [artworks]);
   const [filter, setFilter] = useState<CatalogFilter>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [navigationDirection, setNavigationDirection] = useState<-1 | 0 | 1>(0);
   const visibleArtworks = useMemo(
     () => filter === "all" ? orderedArtworks : orderedArtworks.filter((artwork) => artwork.status === filter),
     [filter, orderedArtworks],
@@ -29,6 +31,7 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
 
   const navigateArtwork = (direction: -1 | 1) => {
     if (!visibleArtworks.length) return;
+    setNavigationDirection(direction);
     const currentIndex = visibleArtworks.findIndex((artwork) => artwork.id === selectedId);
     const nextIndex = currentIndex < 0
       ? 0
@@ -37,11 +40,10 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
   };
 
   return (
-    <main className="works-page">
+    <main id="top" className="works-page">
       <SiteHeader current="works" variant="works" meta={`${artworks.length} работ`} />
 
       <header className="works-hero">
-        <p>Екатерина Соколова · Живопись</p>
         <h1 className="display-title"><span>Каталог</span><i>работ</i></h1>
         <div>
           <p>Москва, урбанизм, цветы — авторская живопись в действующей коллекции и архиве.</p>
@@ -49,9 +51,8 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
         </div>
       </header>
 
-      <section className="works-catalog" aria-labelledby="works-heading">
+      <section className="works-catalog" aria-label="Каталог работ">
         <div className="works-catalog-bar">
-          <h2 id="works-heading">Работы</h2>
           <div className="works-filters" aria-label="Фильтр работ">
             {filters.map((item) => {
               const count = item.id === "all" ? orderedArtworks.length : orderedArtworks.filter((artwork) => artwork.status === item.id).length;
@@ -73,17 +74,19 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
         <div className="works-grid">
           {visibleArtworks.map((artwork, index) => (
             <article className="works-card" key={artwork.id}>
-              <button type="button" onClick={() => setSelectedId(artwork.id)} aria-label={`Открыть информацию о работе «${artwork.title}»`}>
+              <button type="button" onClick={() => { setNavigationDirection(0); setSelectedId(artwork.id); }} aria-label={`Открыть информацию о работе «${artwork.title}»`}>
                 <figure>
                   {artwork.image && <img src={assetPath(artwork.image)} alt={artwork.title} loading={index < 2 ? "eager" : "lazy"} />}
-                  <figcaption>
-                    <span>{String(index + 1).padStart(2, "0")}</span>
-                    <span>{artwork.status === "available" ? "В наличии" : "Архив"}</span>
-                  </figcaption>
                 </figure>
                 <div className="works-card-copy">
-                  <h3>{artwork.title}</h3>
-                  <p>{artwork.year ? `${artwork.year} · ` : ""}{artwork.widthCm && artwork.heightCm ? `${artwork.widthCm} × ${artwork.heightCm} см` : "Размер уточняется"}</p>
+                  <div>
+                    <h3>{artwork.title}</h3>
+                    <p>
+                      {artwork.year ? `${artwork.year} · ` : ""}
+                      {artwork.widthCm && artwork.heightCm ? `${artwork.widthCm} × ${artwork.heightCm} см` : "Размер уточняется"}
+                      <span>{artwork.status === "available" ? "В наличии" : "Архив"}</span>
+                    </p>
+                  </div>
                 </div>
               </button>
             </article>
@@ -96,12 +99,14 @@ export default function WorksCatalog({ artworks }: { artworks: ArtworkData[] }) 
         <Link href="/">В 3D-галерею</Link>
         <a href="mailto:katja.sokolova@gmail.com">Связаться</a>
       </footer>
+      <MobileFooter className="works-mobile-footer" />
 
       <ArtworkDetails
         artwork={selectedArtwork}
         isTransitioning={false}
         position={selectedArtwork ? visibleArtworks.findIndex((artwork) => artwork.id === selectedArtwork.id) + 1 : undefined}
         total={visibleArtworks.length}
+        navigationDirection={navigationDirection}
         onClose={() => setSelectedId(null)}
         onPrevious={() => navigateArtwork(-1)}
         onNext={() => navigateArtwork(1)}

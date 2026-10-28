@@ -1,4 +1,4 @@
-import type { ArtwearItem } from "@/lib/types";
+import type { ArtwearCatalogItem, ArtwearItem } from "@/lib/types";
 
 export const artwearItems: ArtwearItem[] = [
   {
@@ -9,6 +9,7 @@ export const artwearItems: ArtwearItem[] = [
     sourceUrl: "https://sokolova-art.com/gallery/tproduct/858708727922-teper-s-diplomom",
     artworkImage: "/artwear/originals/teper-s-diplomom.jpg",
     modelImage: "/artwear/campaign/teper-s-diplomom-final.jpg",
+    sizes: ["S", "M", "L", "XL"],
   },
   {
     id: "gostinitsa-ukraina",
@@ -18,6 +19,7 @@ export const artwearItems: ArtwearItem[] = [
     sourceUrl: "https://sokolova-art.com/gallery/tproduct/605271821782-gostinitsa-ukraina",
     artworkImage: "/artwear/originals/gostinitsa-ukraina.jpeg",
     modelImage: "/artwear/campaign/gostinitsa-ukraina-final.jpg",
+    sizes: ["S", "M", "L", "XL"],
   },
   {
     id: "tigr",
@@ -27,5 +29,121 @@ export const artwearItems: ArtwearItem[] = [
     sourceUrl: "https://sokolova-art.com/gallery/tproduct/629188149372-tigr",
     artworkImage: "/artwear/originals/tigr.png",
     modelImage: "/artwear/campaign/tigr-final.jpg",
+    sizes: ["S", "M", "L", "XL"],
   },
+];
+
+const inquiryUrl = (subject: string) =>
+  `mailto:katja.sokolova@gmail.com?subject=${encodeURIComponent(subject)}`;
+
+export const artwearCatalogItems: ArtwearCatalogItem[] = [
+  ...artwearItems.map((item) => ({
+    id: item.id,
+    title: item.title,
+    category: "tshirts" as const,
+    categoryLabel: "Футболка",
+    status: "available" as const,
+    statusLabel: "В наличии",
+    image: item.modelImage,
+    sizes: item.sizes,
+    artworkImage: item.artworkImage,
+    sourceUrl: item.sourceUrl,
+    description: `Футболка с принтом по мотивам работы «${item.title}».`,
+    actionLabel: "Заказать",
+    actionUrl: inquiryUrl(`Заказ футболки: ${item.title}`),
+  })),
+  {
+    id: "scarf-red-fish",
+    title: "Красные рыбы",
+    category: "scarves",
+    categoryLabel: "Платок",
+    status: "inquiry",
+    statusLabel: "По запросу",
+    image: "/artwear/home/scarves/red-fish.jpg",
+    description: "Платок по мотивам работы «Красные рыбы».",
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl("Платок: Красные рыбы"),
+  },
+  {
+    id: "scarf-harbor",
+    title: "Средиземноморье",
+    category: "scarves",
+    categoryLabel: "Платок",
+    status: "inquiry",
+    statusLabel: "По запросу",
+    image: "/artwear/home/scarves/harbor-draped.jpg",
+    description: "Платок по мотивам работы «Средиземноморье».",
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl("Платок: Средиземноморье"),
+  },
+  {
+    id: "scarf-moscow",
+    title: "Москва",
+    category: "scarves",
+    categoryLabel: "Платок",
+    status: "inquiry",
+    statusLabel: "По запросу",
+    image: "/artwear/home/scarves/moscow-night.jpg",
+    description: "Платок по мотивам работы «Москва».",
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl("Платок: Москва"),
+  },
+  {
+    id: "scarf-tiger",
+    title: "Тигр",
+    category: "scarves",
+    categoryLabel: "Платок",
+    status: "inquiry",
+    statusLabel: "По запросу",
+    image: "/artwear/home/scarves/tiger.jpg",
+    description: "Платок по мотивам работы «Тигр».",
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl("Платок: Тигр"),
+  },
+  {
+    id: "scarf-flamingo",
+    title: "Фламинго",
+    category: "scarves",
+    categoryLabel: "Платок",
+    status: "inquiry",
+    statusLabel: "По запросу",
+    image: "/artwear/home/scarves/flamingo.jpg",
+    description: "Платок по мотивам работы «Фламинго».",
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl("Платок: Фламинго"),
+  },
+  ...[
+    ["bag-zebra", "Зебра", "/artwear/home/bags/zebra-tote.jpg"],
+    ["bag-girl", "Девочка", "/artwear/home/bags/girl-tote.jpg"],
+    ["bag-harbor", "Средиземноморье", "/artwear/home/bags/harbor-bag.jpg"],
+    ["bag-tiger", "Тигр", "/artwear/home/bags/tiger-bag.jpg"],
+    ["bag-moscow", "Ночная Москва", "/artwear/home/bags/night-city-bag.jpg"],
+  ].map(([id, title, image]) => ({
+    id,
+    title,
+    category: "bags" as const,
+    categoryLabel: "Сумка",
+    status: "inquiry" as const,
+    statusLabel: "По запросу",
+    image,
+    description: `Сумка по мотивам работы «${title}».`,
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl(`Сумка: ${title}`),
+  })),
+  ...[
+    ["painted-circus-front", "Цирк", "/artwear/home/wearable-art/circus-front.jpg"],
+    ["painted-circus-back", "Цирк · вид сзади", "/artwear/home/wearable-art/circus-back.jpg"],
+    ["painted-moscow", "Москва", "/artwear/home/wearable-art/moscow-back.jpg"],
+  ].map(([id, title, image]) => ({
+    id,
+    title,
+    category: "wearable-art" as const,
+    categoryLabel: "Роспись одежды",
+    status: "custom" as const,
+    statusLabel: "Под заказ",
+    image,
+    description: "Ручная роспись одежды по индивидуальному заказу.",
+    actionLabel: "Уточнить",
+    actionUrl: inquiryUrl(`Роспись одежды: ${title}`),
+  })),
 ];

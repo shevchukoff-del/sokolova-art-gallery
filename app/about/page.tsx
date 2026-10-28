@@ -3,12 +3,14 @@ import Image from "next/image";
 import Link from "next/link";
 import SiteHeader from "@/components/SiteHeader";
 import ArrowIcon from "@/components/ArrowIcon";
+import MobileFooter from "@/components/MobileFooter";
+import AboutTimelineMotion from "@/components/AboutTimelineMotion";
 import { aboutMilestones, biographySources } from "@/data/about";
 import { assetPath } from "@/lib/assetPath";
 
 const canonicalUrl = "https://sokolova-art.com/about/";
-const pageTitle = "Екатерина Соколова — художница, биография и творческий путь";
-const pageDescription = "Биография московской художницы Екатерины Соколовой: образование, художественная практика, избранные выставки, ярмарки и этапы творческого пути.";
+const pageTitle = "Екатерина Соколова — современный российский художник";
+const pageDescription = "Биография современного российского художника Екатерины Соколовой: образование, художественная практика, избранные выставки, ярмарки и этапы творческого пути.";
 
 export const metadata: Metadata = {
   title: pageTitle,
@@ -21,7 +23,7 @@ export const metadata: Metadata = {
     title: pageTitle,
     description: pageDescription,
     siteName: "Sokolova Art",
-    images: [{ url: "https://sokolova-art.com/press/artist-portrait-restored.jpg", alt: "Художница Екатерина Соколова" }],
+    images: [{ url: "https://sokolova-art.com/press/artist-portrait-restored.jpg", alt: "Екатерина Соколова — современный российский художник" }],
   },
 };
 
@@ -30,7 +32,7 @@ const structuredData = {
   "@type": "Person",
   name: "Екатерина Сергеевна Соколова",
   alternateName: "Катя Соколова",
-  jobTitle: "Художница",
+  jobTitle: "Современный российский художник",
   birthPlace: { "@type": "Place", name: "Москва" },
   homeLocation: { "@type": "Place", name: "Москва" },
   url: canonicalUrl,
@@ -47,37 +49,31 @@ const chapters = [
   {
     index: "01",
     label: "Город",
-    title: "Москва как состояние",
-    text: "Архитектура в картинах Соколовой не служит декорацией. Она становится живым ритмом: светящиеся окна, вертикали высоток, мокрый асфальт и движение большого города.",
-    image: "/artworks/krasnaya-moskva.webp",
-    alt: "Картина Екатерины Соколовой «Красная Москва»",
-    caption: "Красная Москва · холст, масло",
+    title: "Москва",
+    text: "Москва в картинах Соколовой — не фон, а самостоятельный герой: светящиеся окна, вертикали высоток, мокрый асфальт и движение большого города.",
+    work: { image: "/artworks/krasnaya-moskva.webp", alt: "Картина Екатерины Соколовой «Красная Москва»", caption: "Красная Москва · холст, масло" },
   },
   {
     index: "02",
     label: "Живая форма",
-    title: "Природа крупным планом",
-    text: "Цветы, листья и морские формы художница приближает почти до портрета. Узнаваемый мотив перестаёт быть натюрмортом и превращается в самостоятельный характер.",
-    image: "/artworks/paporotnik.webp",
-    alt: "Картина Екатерины Соколовой «Папоротник»",
-    caption: "Папоротник · холст, масло",
+    title: "Природа",
+    text: "Цветы, листья и морские формы художник рассматривает крупным планом. Знакомый мотив перестаёт быть просто натюрмортом и приобретает собственный характер.",
+    work: { image: "/artworks/paporotnik.webp", alt: "Картина Екатерины Соколовой «Папоротник»", caption: "Папоротник · холст, масло" },
   },
   {
     index: "03",
     label: "Граница",
-    title: "Реальное и внутреннее",
-    text: "Фигуративность остаётся точкой опоры, но цвет, масштаб и композиция сдвигают увиденное в сторону памяти, ощущения и лёгкой мистики.",
-    image: "/artworks/flamingo.webp",
-    alt: "Картина Екатерины Соколовой «Фламинго»",
-    caption: "Фламинго · холст, масло",
+    title: "Реальное и воображаемое",
+    text: "Фигуративность остаётся основой, но цвет, масштаб и композиция переводят увиденное в пространство памяти, ощущения и воображения.",
+    work: { image: "/artworks/flamingo.webp", alt: "Картина Екатерины Соколовой «Фламинго»", caption: "Фламинго · холст, масло" },
   },
 ] as const;
 
-const selectedMilestones = aboutMilestones.slice(1, 6);
+const selectedMilestones = aboutMilestones.slice(1);
 
 export default function AboutPage() {
   return (
-    <main className="about-page" lang="ru">
+    <main className="about-page" id="top" lang="ru">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }}
@@ -93,54 +89,66 @@ export default function AboutPage() {
         <div className="about-hero-portrait">
           <Image
             src={assetPath("/press/artist-portrait-restored.jpg")}
-            alt="Портрет художницы Екатерины Соколовой"
+            alt="Портрет Екатерины Соколовой"
             fill
             priority
             sizes="(max-width: 700px) 66vw, 30vw"
           />
         </div>
         <p className="about-hero-intro">
-          Московская художница, работающая с живописью и графикой. В центре её практики — город,
-          живая природа и тот момент, когда наблюдаемая реальность становится внутренним образом.
+          Современный московский художник. Живопись, графика, текстиль и&nbsp;роспись интерьеров.
         </p>
+        <div className="about-hero-actions">
+          <Link href="/works/"><span>Смотреть работы</span><ArrowIcon /></Link>
+          <a href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
+        </div>
         <div className="about-hero-index" aria-hidden="true"><span>1975</span><i /><span>Сегодня</span></div>
       </section>
 
-      <section className="about-statement about-reveal" aria-labelledby="statement-title">
-        <p>От автора</p>
-        <blockquote id="statement-title">«Работа для меня — это один из способов общения с миром, размышление о жизни».</blockquote>
-        <a href="https://sokolova-art.com/" target="_blank" rel="noopener noreferrer">Официальный сайт <span aria-hidden="true"><ArrowIcon /></span></a>
+      <section className="about-statement about-reveal" aria-labelledby="statement-title" data-quote-reveal>
+        <p className="about-statement-copy" id="statement-title">
+          <span>Всё начинается с наблюдения.</span>{" "}
+          <i>Реальность становится образом.</i>
+        </p>
+        <Link href="/works/">Смотреть работы <span aria-hidden="true"><ArrowIcon /></span></Link>
       </section>
 
       <section className="about-biography about-reveal" aria-labelledby="biography-title">
-        <div className="about-section-label"><span>01</span><p>О художнице</p></div>
-        <h2 id="biography-title">Между точностью наблюдения <i>и свободой образа</i></h2>
+        <div className="about-section-label"><span>01</span><p>О художнике</p></div>
+        <h2 id="biography-title">
+          <span className="about-biography-title-desktop">О Екатерине <i>Соколовой</i></span>
+          <span className="about-biography-title-mobile">О <i>художнике</i></span>
+        </h2>
         <div className="about-biography-copy">
           <p>
             Екатерина Соколова родилась в Москве в семье художников. Получила классическое художественное
             образование в училище памяти 1905 года, а затем окончила факультет графики Строгановской академии.
           </p>
           <p>
-            Её живопись начинается с внимательного взгляда на окружающее: городскую архитектуру, цветы,
-            растения, воду и человеческую фигуру. Реальные мотивы сохраняют узнаваемость, но через цвет и
-            композицию приобретают ощущение сна, памяти или едва уловимой мистики.
+            В основе её живописи — внимательное наблюдение за городской архитектурой, природой и человеком.
+            Реальные мотивы сохраняют узнаваемость, но цвет и композиция переводят их в пространство памяти
+            и воображения.
           </p>
           <p>
-            Художница живёт и работает в Москве. Её работы участвовали в российских и международных
-            выставочных и аукционных проектах и находятся в частных коллекциях в России и США.
+            Помимо станковой живописи и графики, Екатерина работает с текстилем и предметами, переносит
+            авторские мотивы на платки, одежду и аксессуары, создаёт росписи для интерьеров. Её работы
+            показывались на российских и международных выставочных и аукционных проектах и находятся
+            в частных коллекциях в России и США.
           </p>
         </div>
       </section>
 
       <section className="about-practice" aria-labelledby="practice-title">
         <div className="about-section-label"><span>02</span><p>Художественный язык</p></div>
-        <h2 id="practice-title">Три линии<br /><i>одной живописи</i></h2>
+        <h2 id="practice-title">Темы <i>и образы</i></h2>
         <div className="about-chapters">
           {chapters.map((chapter) => (
             <article className="about-chapter about-reveal" key={chapter.index}>
-              <div className="about-chapter-image">
-                <Image src={assetPath(chapter.image)} alt={chapter.alt} fill sizes="(max-width: 700px) 92vw, 52vw" />
-                <span>{chapter.caption}</span>
+              <div className="about-chapter-gallery">
+                <figure className="about-chapter-image">
+                  <Image src={assetPath(chapter.work.image)} alt={chapter.work.alt} fill sizes="(max-width: 700px) 90vw, 52vw" />
+                  <figcaption>{chapter.work.caption}</figcaption>
+                </figure>
               </div>
               <div className="about-chapter-copy">
                 <div><span>{chapter.index}</span><p>{chapter.label}</p></div>
@@ -150,32 +158,36 @@ export default function AboutPage() {
             </article>
           ))}
         </div>
+        <Link className="about-practice-cta" href="/works/">Смотреть все работы <ArrowIcon /></Link>
       </section>
 
-      <section className="about-journey" aria-labelledby="journey-title">
+      <section className="about-journey" aria-labelledby="journey-title" data-about-timeline>
+        <AboutTimelineMotion />
         <header>
           <div className="about-section-label"><span>03</span><p>Линия пути</p></div>
-          <h2 id="journey-title">Этапы, которые<br /><i>собирают историю</i></h2>
-          <p>Избранные подтверждённые события. Полная событийная хронология — в разделе выставок и публикаций.</p>
+          <h2 id="journey-title">Творческий <i>путь</i></h2>
+          <p>Образование, выставки и основные события. Полная хронология — в разделе выставок и публикаций.</p>
         </header>
         <ol>
           {selectedMilestones.map((milestone, index) => (
             <li className="about-milestone about-reveal" key={`${milestone.year}-${milestone.title}`}>
               <span className="about-milestone-number">{String(index + 1).padStart(2, "0")}</span>
               <time>{milestone.year}</time>
+              <span className="about-milestone-track" aria-hidden="true"><i /></span>
               <div>
                 <p>{milestone.eyebrow}</p>
                 <h3>{milestone.title}</h3>
                 <span>{milestone.text}</span>
                 {milestone.sourceUrl.startsWith("/") ? (
-                  <Link href={milestone.sourceUrl}>Источник · {milestone.sourceName} <i aria-hidden="true"><ArrowIcon /></i></Link>
+                  <Link href={milestone.sourceUrl}>{milestone.sourceName} <i aria-hidden="true"><ArrowIcon /></i></Link>
                 ) : (
-                  <a href={milestone.sourceUrl} target="_blank" rel="noopener noreferrer">Источник · {milestone.sourceName} <i aria-hidden="true"><ArrowIcon /></i></a>
+                  <a href={milestone.sourceUrl} target="_blank" rel="noopener noreferrer">{milestone.sourceName} <i aria-hidden="true"><ArrowIcon /></i></a>
                 )}
               </div>
             </li>
           ))}
         </ol>
+        <Link className="about-journey-archive" href="/press/">Полная хронология и публикации <ArrowIcon /></Link>
       </section>
 
       <section className="about-sources" aria-labelledby="sources-title">
@@ -200,6 +212,16 @@ export default function AboutPage() {
         <span>Москва · 2026</span>
         <a href="mailto:katja.sokolova@gmail.com">Связаться <ArrowIcon /></a>
       </footer>
+
+      <div className="about-mobile-end">
+        <section className="mobile-home-contact about-mobile-contact" aria-labelledby="about-contact-title">
+          <p>Sokolova Art · Москва</p>
+          <h2 id="about-contact-title">Искусство может стать частью <i>вашей коллекции, вещи или пространства.</i></h2>
+          <span>Приобрести картину, заказать изделие или обсудить интерьерный проект.</span>
+          <a href="mailto:katja.sokolova@gmail.com"><span>Связаться</span><ArrowIcon /></a>
+        </section>
+        <MobileFooter className="about-mobile-footer" />
+      </div>
     </main>
   );
 }
